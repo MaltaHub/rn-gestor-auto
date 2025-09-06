@@ -115,19 +115,26 @@ export type Database = {
         Row: {
           id: string
           nome: string
-          tenant_id: string | null
+          tenant_id: string
         }
         Insert: {
           id?: string
           nome: string
-          tenant_id?: string | null
+          tenant_id: string
         }
         Update: {
           id?: string
           nome?: string
-          tenant_id?: string | null
+          tenant_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_lojas_tenant"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lojas_tenant_id_fkey"
             columns: ["tenant_id"]
