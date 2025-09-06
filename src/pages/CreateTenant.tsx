@@ -82,7 +82,10 @@ export default function CreateTenant() {
                 <p className="text-sm font-medium">{user?.email}</p>
                 <p className="text-xs text-muted-foreground">Usuário</p>
               </div>
-              <DropdownMenuItem onClick={() => signOut()}>
+              <DropdownMenuItem onClick={async () => {
+                await signOut();
+                navigate("/auth", { replace: true });
+              }}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Sair
               </DropdownMenuItem>

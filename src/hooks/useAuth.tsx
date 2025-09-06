@@ -22,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log("🔐 Auth: state changed", { event, user: session?.user?.email });
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
@@ -60,7 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const signOut = async () => {
+    console.log("🔐 Auth: signing out...");
     await supabase.auth.signOut();
+    // After signout, user will be redirected via AuthProvider logic in App.tsx
   };
 
   return (

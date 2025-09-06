@@ -30,7 +30,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const WithTenantGuard = ({ children }: { children: React.ReactNode }) => {
     const { currentTenant, loading } = useTenant();
 
+    console.log("🔒 TenantGuard: checking tenant access", { currentTenant, loading });
+
     if (loading) {
+      console.log("⏳ TenantGuard: still loading...");
       return (
         <div className="min-h-screen flex items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -39,9 +42,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     }
 
     if (!currentTenant) {
+      console.log("❌ TenantGuard: no tenant found, redirecting to create-tenant");
       return <Navigate to="/create-tenant" replace />;
     }
 
+    console.log("✅ TenantGuard: tenant found, allowing access");
     return <>{children}</>;
   };
 

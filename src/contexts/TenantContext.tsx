@@ -29,17 +29,33 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const { data: currentTenant, isLoading: loadingTenant } = useQuery({
     queryKey: ["user-tenant"],
     queryFn: async () => {
+      console.log("🔍 TenantContext: Fetching user tenant...");
       // Get current user's tenant id via RPC, may return null
       const { data: tenantId, error: rpcError } = await supabase.rpc("get_current_user_tenant_id");
-      if (rpcError) throw rpcError;
-      if (!tenantId) return null;
+      console.log("🔍 TenantContext: RPC result:", { tenantId, rpcError });
+      
+      if (rpcError) {
+        console.error("❌ TenantContext: RPC error:", rpcError);
+        throw rpcError;
+      }
+      if (!tenantId) {
+        console.log("⚠️ TenantContext: No tenant found for user");
+        return null;
+      }
 
+      console.log("🔍 TenantContext: Fetching tenant details for ID:", tenantId);
       const { data, error } = await supabase
         .from("tenants")
         .select("id, nome, dominio")
         .eq("id", tenantId)
         .maybeSingle();
-      if (error) throw error;
+        
+      if (error) {
+        console.error("❌ TenantContext: Tenant fetch error:", error);
+        throw error;
+      }
+      
+      console.log("✅ TenantContext: Tenant found:", data);
       return (data ?? null) as Tenant | null;
     },
   });
