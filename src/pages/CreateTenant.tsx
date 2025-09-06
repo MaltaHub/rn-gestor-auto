@@ -23,22 +23,7 @@ export default function CreateTenant() {
     document.title = "Criar empresa | RN Gestor ERP";
   }, []);
 
-  // If user already belongs to a tenant, redirect away from this page
-  useEffect(() => {
-    let active = true;
-    const checkMembership = async () => {
-      if (!user) return;
-      const { data: tenantId, error } = await supabase.rpc("get_current_user_tenant_id");
-      console.log("🧭 CreateTenant: membership check", { tenantId, error });
-      if (active && tenantId) {
-        navigate("/dashboard", { replace: true });
-      }
-    };
-    checkMembership();
-    return () => {
-      active = false;
-    };
-  }, [user, navigate]);
+  // No automatic redirect to prevent loops - let TenantContext handle routing
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

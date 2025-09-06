@@ -39,7 +39,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [queryClient]);
 
-  // Fetch user's tenant (only one tenant per user)
+  // Fetch user's tenant with fallback verification
   const { data: currentTenant, isLoading: loadingTenant } = useQuery({
     queryKey: ["user-tenant", user?.id],
     enabled: !authLoading && !!user?.id,
@@ -47,24 +47,42 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     refetchOnMount: true,
     queryFn: async () => {
       console.log("🔍 TenantContext: Fetching user tenant...");
-      // Get current user's tenant id via RPC, may return null
+      
+      // First try the RPC function
       const { data: tenantId, error: rpcError } = await supabase.rpc("get_current_user_tenant_id");
       console.log("🔍 TenantContext: RPC result:", { tenantId, rpcError });
       
-      if (rpcError) {
-        console.error("❌ TenantContext: RPC error:", rpcError);
-        throw rpcError;
+      let finalTenantId = tenantId;
+      
+      // If RPC fails or returns null, try direct verification as fallback
+      if (rpcError || !tenantId) {
+        console.log("🔄 TenantContext: RPC failed, trying direct verification");
+        const { data: memberData, error: memberError } = await supabase
+          .from("tenant_members")
+          .select("tenant_id")
+          .eq("user_id", user!.id)
+          .eq("status", "active")
+          .maybeSingle();
+          
+        if (memberError) {
+          console.error("❌ TenantContext: Direct verification error:", memberError);
+          throw memberError;
+        }
+        
+        finalTenantId = memberData?.tenant_id || null;
+        console.log("🔄 TenantContext: Direct verification result:", finalTenantId);
       }
-      if (!tenantId) {
+      
+      if (!finalTenantId) {
         console.log("⚠️ TenantContext: No tenant found for user");
         return null;
       }
 
-      console.log("🔍 TenantContext: Fetching tenant details for ID:", tenantId);
+      console.log("🔍 TenantContext: Fetching tenant details for ID:", finalTenantId);
       const { data, error } = await supabase
         .from("tenants")
         .select("id, nome, dominio")
-        .eq("id", tenantId)
+        .eq("id", finalTenantId)
         .maybeSingle();
         
       if (error) {
