@@ -2,14 +2,12 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Tenant = { id: string; nome: string };
+export type Tenant = { id: string; nome: string; dominio?: string };
 export type Loja = { id: string; nome: string; tenant_id: string | null };
 
 type TenantContextType = {
-  tenants: Tenant[];
+  currentTenant: Tenant | null;
   lojas: Loja[];
-  selectedTenantId: string | null;
-  setSelectedTenantId: (id: string | null) => void;
   selectedLojaId: string | null;
   setSelectedLojaId: (id: string | null) => void;
   loading: boolean;
@@ -18,57 +16,45 @@ type TenantContextType = {
 const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
 export function TenantProvider({ children }: { children: React.ReactNode }) {
-  const [selectedTenantId, setSelectedTenantId] = useState<string | null>(() =>
-    localStorage.getItem("tenant_id")
-  );
   const [selectedLojaId, setSelectedLojaId] = useState<string | null>(() =>
     localStorage.getItem("loja_id")
   );
-
-  useEffect(() => {
-    if (selectedTenantId) localStorage.setItem("tenant_id", selectedTenantId);
-    else localStorage.removeItem("tenant_id");
-  }, [selectedTenantId]);
 
   useEffect(() => {
     if (selectedLojaId) localStorage.setItem("loja_id", selectedLojaId);
     else localStorage.removeItem("loja_id");
   }, [selectedLojaId]);
 
-  const { data: tenantsData, isLoading: loadingTenants } = useQuery({
-    queryKey: ["tenants"],
+  // Fetch user's tenant (only one tenant per user)
+  const { data: currentTenant, isLoading: loadingTenant } = useQuery({
+    queryKey: ["user-tenant"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tenants")
-        .select("id, nome")
-        .order("nome", { ascending: true });
+        .select("id, nome, dominio")
+        .limit(1)
+        .single();
       if (error) throw error;
-      return (data ?? []) as Tenant[];
+      return data as Tenant;
     },
   });
 
+  // Fetch lojas for the user's tenant
   const { data: lojasData, isLoading: loadingLojas } = useQuery({
-    queryKey: ["lojas", selectedTenantId],
-    enabled: !!selectedTenantId,
+    queryKey: ["lojas", currentTenant?.id],
+    enabled: !!currentTenant?.id,
     queryFn: async () => {
-      const query = supabase
+      const { data, error } = await supabase
         .from("lojas")
         .select("id, nome, tenant_id")
+        .eq("tenant_id", currentTenant!.id)
         .order("nome", { ascending: true });
-      if (selectedTenantId) query.eq("tenant_id", selectedTenantId);
-      const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as Loja[];
     },
   });
 
-  // Auto-select first tenant/loja when not set
-  useEffect(() => {
-    if (!selectedTenantId && tenantsData && tenantsData.length > 0) {
-      setSelectedTenantId(tenantsData[0].id);
-    }
-  }, [selectedTenantId, tenantsData]);
-
+  // Auto-select first loja when not set
   useEffect(() => {
     if (!selectedLojaId && lojasData && lojasData.length > 0) {
       setSelectedLojaId(lojasData[0].id);
@@ -77,18 +63,13 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo(
     () => ({
-      tenants: tenantsData ?? [],
+      currentTenant: currentTenant ?? null,
       lojas: lojasData ?? [],
-      selectedTenantId,
-      setSelectedTenantId: (id: string | null) => {
-        setSelectedTenantId(id);
-        setSelectedLojaId(null); // reset loja when tenant changes
-      },
       selectedLojaId,
       setSelectedLojaId,
-      loading: loadingTenants || loadingLojas,
+      loading: loadingTenant || loadingLojas,
     }),
-    [tenantsData, lojasData, selectedTenantId, selectedLojaId, loadingTenants, loadingLojas]
+    [currentTenant, lojasData, selectedLojaId, loadingTenant, loadingLojas]
   );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;

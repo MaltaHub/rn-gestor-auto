@@ -7,7 +7,8 @@ import {
   TrendingUp, 
   Store,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from "lucide-react";
 import {
   Sidebar,
@@ -36,6 +37,7 @@ const navigationItems = [
   { title: "Estoque", url: "/dashboard/estoque", icon: Package },
   { title: "Anúncios", url: "/dashboard/anuncios", icon: Megaphone },
   { title: "Vendas", url: "/dashboard/vendas", icon: TrendingUp },
+  { title: "Perfil do Tenant", url: "/dashboard/tenant-profile", icon: Settings },
 ];
 
 // Dados de lojas e tenants agora vêm do Supabase via TenantContext
@@ -45,8 +47,7 @@ export function AppSidebar() {
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { signOut, user } = useAuth();
-  const { tenants, lojas, selectedTenantId, setSelectedTenantId, selectedLojaId, setSelectedLojaId, loading } = useTenant();
-  const currentTenant = tenants.find((t) => t.id === selectedTenantId) || null;
+  const { currentTenant, lojas, selectedLojaId, setSelectedLojaId, loading } = useTenant();
   const currentLoja = lojas.find((l) => l.id === selectedLojaId) || null;
 
   const currentPath = location.pathname;
@@ -73,38 +74,18 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Seletor de Tenant */}
+        {/* Tenant Atual (sem seleção) */}
         <SidebarGroup>
           <SidebarGroupLabel>Tenant</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuButton className="w-full justify-between">
-                      <div className="flex items-center gap-2">
-                        <Building2 className="h-4 w-4" />
-                        {!collapsed && <span>{currentTenant?.nome ?? "Selecione"}</span>}
-                      </div>
-                      {!collapsed && <ChevronDown className="h-4 w-4" />}
-                    </SidebarMenuButton>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-56">
-                    {(tenants || []).map((t) => (
-                      <DropdownMenuItem
-                        key={t.id}
-                        onClick={() => setSelectedTenantId(t.id)}
-                        className={currentTenant?.id === t.id ? "bg-primary/10" : ""}
-                      >
-                        <Building2 className="h-4 w-4 mr-2" />
-                        {t.nome}
-                      </DropdownMenuItem>
-                    ))}
-                    {(!tenants || tenants.length === 0) && (
-                      <div className="px-2 py-1 text-sm text-muted-foreground">Nenhum tenant</div>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <SidebarMenuButton className="w-full">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    {!collapsed && <span>{currentTenant?.nome ?? "Carregando..."}</span>}
+                  </div>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -117,7 +98,7 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild disabled={!selectedTenantId || loading}>
+                  <DropdownMenuTrigger asChild disabled={!currentTenant || loading}>
                     <SidebarMenuButton className="w-full justify-between">
                       <div className="flex items-center gap-2">
                         <Store className="h-4 w-4" />
@@ -137,7 +118,7 @@ export function AppSidebar() {
                         {loja.nome}
                       </DropdownMenuItem>
                     ))}
-                    {selectedTenantId && (!lojas || lojas.length === 0) && (
+                    {currentTenant && (!lojas || lojas.length === 0) && (
                       <div className="px-2 py-1 text-sm text-muted-foreground">Nenhuma loja</div>
                     )}
                   </DropdownMenuContent>
