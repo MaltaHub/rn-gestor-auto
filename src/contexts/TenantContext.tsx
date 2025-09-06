@@ -29,13 +29,18 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const { data: currentTenant, isLoading: loadingTenant } = useQuery({
     queryKey: ["user-tenant"],
     queryFn: async () => {
+      // Get current user's tenant id via RPC, may return null
+      const { data: tenantId, error: rpcError } = await supabase.rpc("get_current_user_tenant_id");
+      if (rpcError) throw rpcError;
+      if (!tenantId) return null;
+
       const { data, error } = await supabase
         .from("tenants")
         .select("id, nome, dominio")
-        .limit(1)
-        .single();
+        .eq("id", tenantId)
+        .maybeSingle();
       if (error) throw error;
-      return data as Tenant;
+      return (data ?? null) as Tenant | null;
     },
   });
 

@@ -13,6 +13,8 @@ import Anuncios from "./pages/Anuncios";
 import Vendas from "./pages/Vendas";
 import TenantProfile from "./pages/TenantProfile";
 import NotFound from "./pages/NotFound";
+import CreateTenant from "./pages/CreateTenant";
+import JoinTenant from "./pages/JoinTenant";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +28,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/create-tenant" element={<CreateTenant />} />
+            <Route path="/join-tenant/:token" element={<JoinTenant />} />
             <Route path="/dashboard" element={
               <DashboardLayout>
                 <Dashboard />

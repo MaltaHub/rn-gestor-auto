@@ -260,6 +260,50 @@ export type Database = {
           },
         ]
       }
+      tenant_invites: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          invited_by_user_id: string
+          invited_user_id: string
+          status: string
+          tenant_id: string
+          token: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by_user_id: string
+          invited_user_id: string
+          status?: string
+          tenant_id: string
+          token?: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          invited_by_user_id?: string
+          invited_user_id?: string
+          status?: string
+          tenant_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_invites_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenant_members: {
         Row: {
           ativo: boolean
@@ -324,37 +368,22 @@ export type Database = {
       }
       usuario: {
         Row: {
-          aniversario: string | null
-          biografia: string | null
-          cargo: string | null
           email: string
-          foto_perfil: string | null
           id: string
           nome: string
           registrado_em: string | null
-          ultima_conexao_em: string | null
         }
         Insert: {
-          aniversario?: string | null
-          biografia?: string | null
-          cargo?: string | null
           email: string
-          foto_perfil?: string | null
           id?: string
           nome: string
           registrado_em?: string | null
-          ultima_conexao_em?: string | null
         }
         Update: {
-          aniversario?: string | null
-          biografia?: string | null
-          cargo?: string | null
           email?: string
-          foto_perfil?: string | null
           id?: string
           nome?: string
           registrado_em?: string | null
-          ultima_conexao_em?: string | null
         }
         Relationships: []
       }
@@ -539,6 +568,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_tenant_invite: {
+        Args: { p_token: string }
+        Returns: boolean
+      }
       agrupar_em_array: {
         Args: {
           p_coluna_grupo: string
@@ -553,6 +586,24 @@ export type Database = {
           grupo: string
           valores: string[]
         }[]
+      }
+      create_tenant_invite: {
+        Args: {
+          p_expires_at?: string
+          p_invited_user_id: string
+          p_tenant_id: string
+        }
+        Returns: {
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          invited_by_user_id: string
+          invited_user_id: string
+          status: string
+          tenant_id: string
+          token: string
+        }
       }
       get_current_user_tenant_id: {
         Args: Record<PropertyKey, never>
