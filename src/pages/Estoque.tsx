@@ -178,7 +178,7 @@ export default function Estoque() {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
-                        {(veiculo.local as any)?.nome || "N/A"}
+                        Loja Selecionada
                       </div>
                     </TableCell>
                     <TableCell className="text-right">

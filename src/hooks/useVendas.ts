@@ -36,18 +36,24 @@ export function useVendasStats() {
     queryKey: ["vendas-stats", selectedLojaId],
     enabled: !!selectedLojaId,
     queryFn: async () => {
-      // Mock stats baseado em veículos vendidos
+      // Get stats for vehicles sold from the selected store
       const { data } = await supabase
-        .from("veiculos")
-        .select("preco_venda")
-        .eq("estado_venda", "vendido")
-        .eq("local", selectedLojaId || "");
+        .from("veiculos_loja")
+        .select(`
+          preco,
+          veiculos!inner(preco_venda, estado_venda)
+        `)
+        .eq("loja_id", selectedLojaId || "")
+        .eq("veiculos.estado_venda", "vendido");
 
+      const vendasData = data || [];
+      const faturamento = vendasData.reduce((acc, item) => acc + (item.veiculos.preco_venda || 0), 0);
+      
       return {
-        vendasMes: data?.length || 32,
-        faturamento: data?.reduce((acc, v) => acc + (v.preco_venda || 0), 0) || 1200000,
-        ticketMedio: data?.length ? (data.reduce((acc, v) => acc + (v.preco_venda || 0), 0) / data.length) : 87500,
-        comissoes: 62000,
+        vendasMes: vendasData.length,
+        faturamento,
+        ticketMedio: vendasData.length ? (faturamento / vendasData.length) : 0,
+        comissoes: faturamento * 0.05, // 5% commission
       };
     },
   });
