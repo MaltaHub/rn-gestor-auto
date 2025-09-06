@@ -115,16 +115,27 @@ export type Database = {
         Row: {
           id: string
           nome: string
+          tenant_id: string | null
         }
         Insert: {
           id?: string
           nome: string
+          tenant_id?: string | null
         }
         Update: {
           id?: string
           nome?: string
+          tenant_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "lojas_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       modelo: {
         Row: {
@@ -241,6 +252,68 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tenant_members: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["tenant_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["tenant_role"]
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["tenant_role"]
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_members_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenants: {
+        Row: {
+          ativo: boolean
+          created_at: string
+          dominio: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+        Insert: {
+          ativo?: boolean
+          created_at?: string
+          dominio?: string | null
+          id?: string
+          nome: string
+          updated_at?: string
+        }
+        Update: {
+          ativo?: boolean
+          created_at?: string
+          dominio?: string | null
+          id?: string
+          nome?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       usuario: {
         Row: {
@@ -474,6 +547,21 @@ export type Database = {
           valores: string[]
         }[]
       }
+      get_current_user_tenant_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      has_tenant_membership: {
+        Args: { p_tenant_id: string }
+        Returns: boolean
+      }
+      has_tenant_role: {
+        Args: {
+          p_role: Database["public"]["Enums"]["tenant_role"]
+          p_tenant_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       estado_veiculo:
@@ -489,6 +577,7 @@ export type Database = {
         | "vendido"
         | "repassado"
         | "restrito"
+      tenant_role: "owner" | "admin" | "manager" | "user"
       tipo_cambio: "manual" | "automatico" | "cvt" | "outro"
       tipo_carroceria:
         | "sedan"
@@ -641,6 +730,7 @@ export const Constants = {
         "repassado",
         "restrito",
       ],
+      tenant_role: ["owner", "admin", "manager", "user"],
       tipo_cambio: ["manual", "automatico", "cvt", "outro"],
       tipo_carroceria: [
         "sedan",

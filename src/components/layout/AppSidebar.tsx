@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { NavLink, useLocation } from "react-router-dom";
 import { 
   Building2, 
@@ -30,6 +30,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import { useTenant } from "@/contexts/TenantContext";
 
 const navigationItems = [
   { title: "Estoque", url: "/dashboard/estoque", icon: Package },
@@ -37,19 +38,16 @@ const navigationItems = [
   { title: "Vendas", url: "/dashboard/vendas", icon: TrendingUp },
 ];
 
-// Mock data para lojas - em produção viria do Supabase
-const mockLojas = [
-  { id: "1", nome: "Loja Centro" },
-  { id: "2", nome: "Loja Norte" },
-  { id: "3", nome: "Loja Sul" },
-];
+// Dados de lojas e tenants agora vêm do Supabase via TenantContext
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
   const { signOut, user } = useAuth();
-  const [currentLoja, setCurrentLoja] = useState(mockLojas[0]);
+  const { tenants, lojas, selectedTenantId, setSelectedTenantId, selectedLojaId, setSelectedLojaId, loading } = useTenant();
+  const currentTenant = tenants.find((t) => t.id === selectedTenantId) || null;
+  const currentLoja = lojas.find((l) => l.id === selectedLojaId) || null;
 
   const currentPath = location.pathname;
   const isActive = (path: string) => currentPath === path;
@@ -75,9 +73,9 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Seletor de Loja */}
+        {/* Seletor de Tenant */}
         <SidebarGroup>
-          <SidebarGroupLabel>Loja Atual</SidebarGroupLabel>
+          <SidebarGroupLabel>Tenant</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -85,23 +83,63 @@ export function AppSidebar() {
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton className="w-full justify-between">
                       <div className="flex items-center gap-2">
-                        <Store className="h-4 w-4" />
-                        {!collapsed && <span>{currentLoja.nome}</span>}
+                        <Building2 className="h-4 w-4" />
+                        {!collapsed && <span>{currentTenant?.nome ?? "Selecione"}</span>}
                       </div>
                       {!collapsed && <ChevronDown className="h-4 w-4" />}
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    {mockLojas.map((loja) => (
+                  <DropdownMenuContent align="start" className="w-56">
+                    {(tenants || []).map((t) => (
+                      <DropdownMenuItem
+                        key={t.id}
+                        onClick={() => setSelectedTenantId(t.id)}
+                        className={currentTenant?.id === t.id ? "bg-primary/10" : ""}
+                      >
+                        <Building2 className="h-4 w-4 mr-2" />
+                        {t.nome}
+                      </DropdownMenuItem>
+                    ))}
+                    {(!tenants || tenants.length === 0) && (
+                      <div className="px-2 py-1 text-sm text-muted-foreground">Nenhum tenant</div>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Seletor de Loja */}
+        <SidebarGroup>
+          <SidebarGroupLabel>Loja Atual</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild disabled={!selectedTenantId || loading}>
+                    <SidebarMenuButton className="w-full justify-between">
+                      <div className="flex items-center gap-2">
+                        <Store className="h-4 w-4" />
+                        {!collapsed && <span>{currentLoja?.nome ?? (loading ? "Carregando..." : "Selecione")}</span>}
+                      </div>
+                      {!collapsed && <ChevronDown className="h-4 w-4" />}
+                    </SidebarMenuButton>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    {(lojas || []).map((loja) => (
                       <DropdownMenuItem
                         key={loja.id}
-                        onClick={() => setCurrentLoja(loja)}
-                        className={currentLoja.id === loja.id ? "bg-primary/10" : ""}
+                        onClick={() => setSelectedLojaId(loja.id)}
+                        className={currentLoja?.id === loja.id ? "bg-primary/10" : ""}
                       >
                         <Store className="h-4 w-4 mr-2" />
                         {loja.nome}
                       </DropdownMenuItem>
                     ))}
+                    {selectedTenantId && (!lojas || lojas.length === 0) && (
+                      <div className="px-2 py-1 text-sm text-muted-foreground">Nenhuma loja</div>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </SidebarMenuItem>
