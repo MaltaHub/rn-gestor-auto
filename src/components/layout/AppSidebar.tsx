@@ -74,22 +74,6 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Tenant Atual (sem seleção) */}
-        <SidebarGroup>
-          <SidebarGroupLabel>Tenant</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton className="w-full">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    {!collapsed && <span>{currentTenant?.nome ?? "Carregando..."}</span>}
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* Seletor de Loja */}
         <SidebarGroup>
@@ -156,19 +140,12 @@ export function AppSidebar() {
         <div className="p-4">
           {!collapsed && (
             <div className="mb-3">
-              <p className="text-sm font-medium">{user?.email}</p>
-              <p className="text-xs text-muted-foreground">Administrador</p>
+              <p className="text-sm font-medium">{currentTenant?.nome ?? "Empresa"}</p>
+              <p className="text-xs text-muted-foreground">
+                {currentLoja?.nome ?? (lojas?.length === 0 ? "Nenhuma loja" : "Selecione uma loja")}
+              </p>
             </div>
           )}
-          <Button
-            variant="ghost"
-            size={collapsed ? "icon" : "sm"}
-            onClick={handleSignOut}
-            className="w-full justify-start"
-          >
-            <LogOut className="h-4 w-4" />
-            {!collapsed && <span className="ml-2">Sair</span>}
-          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>
