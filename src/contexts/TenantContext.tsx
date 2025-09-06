@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 export type Tenant = { id: string; nome: string; dominio?: string };
 export type Loja = { id: string; nome: string; tenant_id: string | null };
@@ -25,9 +26,25 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     else localStorage.removeItem("loja_id");
   }, [selectedLojaId]);
 
+  // Auth-aware setup for tenant queries
+  const { user, loading: authLoading } = useAuth();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      console.log("🔄 TenantContext: auth changed, invalidating queries");
+      queryClient.invalidateQueries({ queryKey: ["user-tenant"] });
+      queryClient.invalidateQueries({ queryKey: ["lojas"] });
+    });
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
+
   // Fetch user's tenant (only one tenant per user)
   const { data: currentTenant, isLoading: loadingTenant } = useQuery({
-    queryKey: ["user-tenant"],
+    queryKey: ["user-tenant", user?.id],
+    enabled: !authLoading && !!user?.id,
+    staleTime: 0,
+    refetchOnMount: true,
     queryFn: async () => {
       console.log("🔍 TenantContext: Fetching user tenant...");
       // Get current user's tenant id via RPC, may return null

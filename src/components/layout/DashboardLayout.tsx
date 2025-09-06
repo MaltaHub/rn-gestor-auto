@@ -102,7 +102,10 @@ function UserMenu() {
           <p className="text-sm font-medium">{user?.email}</p>
           <p className="text-xs text-muted-foreground">Usuário</p>
         </div>
-        <DropdownMenuItem onClick={() => signOut()}>
+        <DropdownMenuItem onClick={async () => {
+          await signOut();
+          // Redirect handled by auth state at layout level
+        }}>
           <LogOut className="mr-2 h-4 w-4" />
           Sair
         </DropdownMenuItem>
