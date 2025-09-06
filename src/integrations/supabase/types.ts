@@ -1,0 +1,665 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.12 (cd3cf9e)"
+  }
+  public: {
+    Tables: {
+      caracteristicas: {
+        Row: {
+          id: string
+          nome: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      caracteristicas_repetidos: {
+        Row: {
+          caracteristica_id: string
+          repetido_id: string
+        }
+        Insert: {
+          caracteristica_id: string
+          repetido_id: string
+        }
+        Update: {
+          caracteristica_id?: string
+          repetido_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caracteristicas_veiculos_caracteristica_id_fkey"
+            columns: ["caracteristica_id"]
+            isOneToOne: false
+            referencedRelation: "caracteristicas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caracteristicas_veiculos_veiculo_id_fkey"
+            columns: ["repetido_id"]
+            isOneToOne: false
+            referencedRelation: "repetidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      caracteristicas_veiculos: {
+        Row: {
+          caracteristica_id: string
+          veiculo_id: string
+        }
+        Insert: {
+          caracteristica_id: string
+          veiculo_id: string
+        }
+        Update: {
+          caracteristica_id?: string
+          veiculo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "caracteristicas_veiculos_caracteristica_id_fkey"
+            columns: ["caracteristica_id"]
+            isOneToOne: false
+            referencedRelation: "caracteristicas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caracteristicas_veiculos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "caracteristicas_veiculos_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "view_veiculos_expandidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locais: {
+        Row: {
+          id: string
+          nome: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      lojas: {
+        Row: {
+          id: string
+          nome: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      modelo: {
+        Row: {
+          cabine: string | null
+          cambio: string | null
+          carroceria: Database["public"]["Enums"]["tipo_carroceria"]
+          cilindros: number | null
+          combustivel: Database["public"]["Enums"]["tipo_combustivel"]
+          edicao: string | null
+          id: string
+          lugares: number | null
+          marca: string
+          motor: string | null
+          nome: string
+          portas: number | null
+          tipo_cambio: Database["public"]["Enums"]["tipo_cambio"]
+          tracao: string | null
+          valvulas: number | null
+        }
+        Insert: {
+          cabine?: string | null
+          cambio?: string | null
+          carroceria: Database["public"]["Enums"]["tipo_carroceria"]
+          cilindros?: number | null
+          combustivel: Database["public"]["Enums"]["tipo_combustivel"]
+          edicao?: string | null
+          id?: string
+          lugares?: number | null
+          marca: string
+          motor?: string | null
+          nome: string
+          portas?: number | null
+          tipo_cambio: Database["public"]["Enums"]["tipo_cambio"]
+          tracao?: string | null
+          valvulas?: number | null
+        }
+        Update: {
+          cabine?: string | null
+          cambio?: string | null
+          carroceria?: Database["public"]["Enums"]["tipo_carroceria"]
+          cilindros?: number | null
+          combustivel?: Database["public"]["Enums"]["tipo_combustivel"]
+          edicao?: string | null
+          id?: string
+          lugares?: number | null
+          marca?: string
+          motor?: string | null
+          nome?: string
+          portas?: number | null
+          tipo_cambio?: Database["public"]["Enums"]["tipo_cambio"]
+          tracao?: string | null
+          valvulas?: number | null
+        }
+        Relationships: []
+      }
+      plataforma: {
+        Row: {
+          id: string
+          nome: string
+        }
+        Insert: {
+          id?: string
+          nome: string
+        }
+        Update: {
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      repetidos: {
+        Row: {
+          ano_fabricacao_padrao: number
+          ano_modelo_padrao: number
+          cor_padrao: string
+          id: string
+          max_hodometro: number
+          min_hodometro: number
+          modelo_id: string
+          pasta_fotos: string | null
+          preco_padrao: number
+          registrado_em: string | null
+        }
+        Insert: {
+          ano_fabricacao_padrao: number
+          ano_modelo_padrao: number
+          cor_padrao: string
+          id?: string
+          max_hodometro: number
+          min_hodometro: number
+          modelo_id: string
+          pasta_fotos?: string | null
+          preco_padrao: number
+          registrado_em?: string | null
+        }
+        Update: {
+          ano_fabricacao_padrao?: number
+          ano_modelo_padrao?: number
+          cor_padrao?: string
+          id?: string
+          max_hodometro?: number
+          min_hodometro?: number
+          modelo_id?: string
+          pasta_fotos?: string | null
+          preco_padrao?: number
+          registrado_em?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repetidos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelo"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usuario: {
+        Row: {
+          aniversario: string | null
+          biografia: string | null
+          cargo: string | null
+          email: string
+          foto_perfil: string | null
+          id: string
+          nome: string
+          registrado_em: string | null
+          ultima_conexao_em: string | null
+        }
+        Insert: {
+          aniversario?: string | null
+          biografia?: string | null
+          cargo?: string | null
+          email: string
+          foto_perfil?: string | null
+          id?: string
+          nome: string
+          registrado_em?: string | null
+          ultima_conexao_em?: string | null
+        }
+        Update: {
+          aniversario?: string | null
+          biografia?: string | null
+          cargo?: string | null
+          email?: string
+          foto_perfil?: string | null
+          id?: string
+          nome?: string
+          registrado_em?: string | null
+          ultima_conexao_em?: string | null
+        }
+        Relationships: []
+      }
+      veiculos: {
+        Row: {
+          ano_fabricacao: number | null
+          ano_modelo: number | null
+          chassi: string | null
+          cor: string
+          editado_em: string | null
+          editado_por: string | null
+          estado_veiculo: Database["public"]["Enums"]["estado_veiculo"] | null
+          estado_venda: Database["public"]["Enums"]["estado_venda"]
+          estagio_documentacao: string | null
+          hodometro: number
+          id: string
+          local: string
+          modelo_id: string | null
+          observacao: string | null
+          placa: string
+          preco_venda: number | null
+          registrado_em: string | null
+          registrado_por: string | null
+          repetido_id: string | null
+        }
+        Insert: {
+          ano_fabricacao?: number | null
+          ano_modelo?: number | null
+          chassi?: string | null
+          cor: string
+          editado_em?: string | null
+          editado_por?: string | null
+          estado_veiculo?: Database["public"]["Enums"]["estado_veiculo"] | null
+          estado_venda: Database["public"]["Enums"]["estado_venda"]
+          estagio_documentacao?: string | null
+          hodometro: number
+          id?: string
+          local: string
+          modelo_id?: string | null
+          observacao?: string | null
+          placa: string
+          preco_venda?: number | null
+          registrado_em?: string | null
+          registrado_por?: string | null
+          repetido_id?: string | null
+        }
+        Update: {
+          ano_fabricacao?: number | null
+          ano_modelo?: number | null
+          chassi?: string | null
+          cor?: string
+          editado_em?: string | null
+          editado_por?: string | null
+          estado_veiculo?: Database["public"]["Enums"]["estado_veiculo"] | null
+          estado_venda?: Database["public"]["Enums"]["estado_venda"]
+          estagio_documentacao?: string | null
+          hodometro?: number
+          id?: string
+          local?: string
+          modelo_id?: string | null
+          observacao?: string | null
+          placa?: string
+          preco_venda?: number | null
+          registrado_em?: string | null
+          registrado_por?: string | null
+          repetido_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_editado_por_fkey"
+            columns: ["editado_por"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_local_fkey"
+            columns: ["local"]
+            isOneToOne: false
+            referencedRelation: "locais"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_registrado_por_fkey"
+            columns: ["registrado_por"]
+            isOneToOne: false
+            referencedRelation: "usuario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_repetido_id_fkey"
+            columns: ["repetido_id"]
+            isOneToOne: false
+            referencedRelation: "repetidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      veiculos_loja: {
+        Row: {
+          id: string
+          loja_id: string
+          pasta_fotos: string | null
+          preco: number | null
+          veiculo_id: string
+        }
+        Insert: {
+          id?: string
+          loja_id: string
+          pasta_fotos?: string | null
+          preco?: number | null
+          veiculo_id: string
+        }
+        Update: {
+          id?: string
+          loja_id?: string
+          pasta_fotos?: string | null
+          preco?: number | null
+          veiculo_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_por_loja_loja_id_fkey"
+            columns: ["loja_id"]
+            isOneToOne: false
+            referencedRelation: "lojas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_por_loja_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_por_loja_veiculo_id_fkey"
+            columns: ["veiculo_id"]
+            isOneToOne: false
+            referencedRelation: "view_veiculos_expandidos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      view_pariedade_veiculos: {
+        Row: {
+          id: number | null
+          repetido_id: string | null
+          veiculo_id: string | null
+        }
+        Relationships: []
+      }
+      view_veiculos_expandidos: {
+        Row: {
+          ano_fabricacao: number | null
+          ano_modelo: number | null
+          caracteristicas: Json | null
+          chassi: string | null
+          cor: string | null
+          editado_em: string | null
+          estado_veiculo: Database["public"]["Enums"]["estado_veiculo"] | null
+          estado_venda: Database["public"]["Enums"]["estado_venda"] | null
+          hodometro: number | null
+          id: string | null
+          local: Json | null
+          modelo: Json | null
+          observacao: string | null
+          placa: string | null
+          preco_venda: number | null
+          registrado_em: string | null
+        }
+        Relationships: []
+      }
+    }
+    Functions: {
+      agrupar_em_array: {
+        Args: {
+          p_coluna_grupo: string
+          p_coluna_lookup_chave?: string
+          p_coluna_lookup_valor?: string
+          p_coluna_valor: string
+          p_filtro?: string
+          p_tabela_base: string
+          p_tabela_lookup?: string
+        }
+        Returns: {
+          grupo: string
+          valores: string[]
+        }[]
+      }
+    }
+    Enums: {
+      estado_veiculo:
+        | "novo"
+        | "seminovo"
+        | "usado"
+        | "sucata"
+        | "limpo"
+        | "sujo"
+      estado_venda:
+        | "disponivel"
+        | "reservado"
+        | "vendido"
+        | "repassado"
+        | "restrito"
+      tipo_cambio: "manual" | "automatico" | "cvt" | "outro"
+      tipo_carroceria:
+        | "sedan"
+        | "hatch"
+        | "camioneta"
+        | "suv"
+        | "suv compacto"
+        | "suv medio"
+        | "van"
+        | "buggy"
+      tipo_combustivel:
+        | "gasolina"
+        | "alcool"
+        | "flex"
+        | "diesel"
+        | "eletrico"
+        | "hibrido"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      estado_veiculo: ["novo", "seminovo", "usado", "sucata", "limpo", "sujo"],
+      estado_venda: [
+        "disponivel",
+        "reservado",
+        "vendido",
+        "repassado",
+        "restrito",
+      ],
+      tipo_cambio: ["manual", "automatico", "cvt", "outro"],
+      tipo_carroceria: [
+        "sedan",
+        "hatch",
+        "camioneta",
+        "suv",
+        "suv compacto",
+        "suv medio",
+        "van",
+        "buggy",
+      ],
+      tipo_combustivel: [
+        "gasolina",
+        "alcool",
+        "flex",
+        "diesel",
+        "eletrico",
+        "hibrido",
+      ],
+    },
+  },
+} as const
