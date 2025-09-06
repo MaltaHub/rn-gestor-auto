@@ -45,7 +45,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     enabled: !authLoading && !!user?.id,
     staleTime: 0,
     refetchOnMount: true,
-    queryFn: async () => {
+    queryFn: async (): Promise<Tenant | null> => {
       console.log("🔍 TenantContext: Fetching user tenant...");
       
       // First try the RPC function
@@ -91,7 +91,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
       }
       
       console.log("✅ TenantContext: Tenant found:", data);
-      return (data ?? null) as Tenant | null;
+      return data as Tenant | null;
     },
   });
 
