@@ -587,6 +587,17 @@ export type Database = {
           valores: string[]
         }[]
       }
+      create_tenant: {
+        Args: { p_dominio?: string; p_nome: string }
+        Returns: {
+          ativo: boolean
+          created_at: string
+          dominio: string | null
+          id: string
+          nome: string
+          updated_at: string
+        }
+      }
       create_tenant_invite: {
         Args: {
           p_expires_at?: string

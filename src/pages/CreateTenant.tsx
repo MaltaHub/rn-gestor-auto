@@ -33,7 +33,7 @@ export default function CreateTenant() {
     }
     try {
       setSubmitting(true);
-      const { data, error } = await (supabase as any).rpc("create_tenant", {
+      const { data, error } = await supabase.rpc("create_tenant", {
         p_nome: nome.trim(),
         p_dominio: dominio.trim() || null,
       });
