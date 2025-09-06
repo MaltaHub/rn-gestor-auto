@@ -39,59 +39,43 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, [queryClient]);
 
-  // Fetch user's tenant with fallback verification
+  // Fetch user's tenant using direct query (more reliable than RPC)
   const { data: currentTenant, isLoading: loadingTenant } = useQuery({
     queryKey: ["user-tenant", user?.id],
     enabled: !authLoading && !!user?.id,
     staleTime: 0,
     refetchOnMount: true,
     queryFn: async () => {
-      console.log("🔍 TenantContext: Fetching user tenant...");
+      console.log("🔍 TenantContext: Fetching user tenant for user:", user!.id);
       
-      // First try the RPC function
-      const { data: tenantId, error: rpcError } = await supabase.rpc("get_current_user_tenant_id");
-      console.log("🔍 TenantContext: RPC result:", { tenantId, rpcError });
+      // Direct query to tenant_members with join to tenants table
+      const { data: memberData, error: memberError } = await supabase
+        .from("tenant_members")
+        .select(`
+          tenant_id,
+          tenants!inner(
+            id,
+            nome,
+            dominio
+          )
+        `)
+        .eq("user_id", user!.id)
+        .eq("ativo", true)
+        .maybeSingle();
       
-      let finalTenantId = tenantId;
-      
-      // If RPC fails or returns null, try direct verification as fallback
-      if (rpcError || !tenantId) {
-        console.log("🔄 TenantContext: RPC failed, trying direct verification");
-        const { data: memberData, error: memberError } = await supabase
-          .from("tenant_members")
-          .select("tenant_id")
-          .eq("user_id", user!.id)
-          .eq("ativo", true)
-          .maybeSingle();
-          
-        if (memberError) {
-          console.error("❌ TenantContext: Direct verification error:", memberError);
-          throw memberError;
-        }
-        
-        finalTenantId = memberData?.tenant_id || null;
-        console.log("🔄 TenantContext: Direct verification result:", finalTenantId);
+      if (memberError) {
+        console.error("❌ TenantContext: Error fetching tenant membership:", memberError);
+        throw memberError;
       }
       
-      if (!finalTenantId) {
-        console.log("⚠️ TenantContext: No tenant found for user");
+      if (!memberData) {
+        console.log("⚠️ TenantContext: No active tenant membership found for user");
         return null;
       }
-
-      console.log("🔍 TenantContext: Fetching tenant details for ID:", finalTenantId);
-      const { data, error } = await supabase
-        .from("tenants")
-        .select("id, nome, dominio")
-        .eq("id", finalTenantId)
-        .maybeSingle();
-        
-      if (error) {
-        console.error("❌ TenantContext: Tenant fetch error:", error);
-        throw error;
-      }
       
-      console.log("✅ TenantContext: Tenant found:", data);
-      return data;
+      const tenant = memberData.tenants;
+      console.log("✅ TenantContext: Tenant found:", tenant);
+      return tenant;
     },
   });
 
