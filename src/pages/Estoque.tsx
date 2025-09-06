@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,58 +19,12 @@ import {
   Calendar,
   MapPin 
 } from 'lucide-react';
-
-// Mock data para veículos
-const mockVeiculos = [
-  {
-    id: "1",
-    marca: "Toyota",
-    modelo: "Corolla",
-    ano: 2023,
-    cor: "Prata",
-    km: 15000,
-    preco: 95000,
-    status: "disponivel",
-    local: "Loja Centro"
-  },
-  {
-    id: "2",
-    marca: "Honda",
-    modelo: "Civic",
-    ano: 2022,
-    cor: "Preto",
-    km: 25000,
-    preco: 88000,
-    status: "reservado",
-    local: "Loja Norte"
-  },
-  {
-    id: "3",
-    marca: "Volkswagen",
-    modelo: "Jetta",
-    ano: 2023,
-    cor: "Branco",
-    km: 8000,
-    preco: 102000,
-    status: "disponivel",
-    local: "Loja Centro"
-  },
-];
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "disponivel":
-      return <Badge variant="secondary" className="bg-success/10 text-success">Disponível</Badge>;
-    case "reservado":
-      return <Badge variant="secondary" className="bg-warning/10 text-warning">Reservado</Badge>;
-    case "vendido":
-      return <Badge variant="secondary" className="bg-destructive/10 text-destructive">Vendido</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
+import { useVeiculos, useVeiculosStats } from '@/hooks/useVeiculos';
 
 export default function Estoque() {
+  const [filtro, setFiltro] = useState("");
+  const { data: veiculos = [], isLoading } = useVeiculos(filtro);
+  const { data: stats } = useVeiculosStats();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -92,7 +47,7 @@ export default function Estoque() {
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">245</div>
+            <div className="text-2xl font-bold">{stats?.total || 0}</div>
           </CardContent>
         </Card>
 
@@ -102,7 +57,7 @@ export default function Estoque() {
             <Car className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">198</div>
+            <div className="text-2xl font-bold text-success">{stats?.disponiveis || 0}</div>
           </CardContent>
         </Card>
 
@@ -112,7 +67,7 @@ export default function Estoque() {
             <Car className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">32</div>
+            <div className="text-2xl font-bold text-warning">{stats?.reservados || 0}</div>
           </CardContent>
         </Card>
 
@@ -122,7 +77,7 @@ export default function Estoque() {
             <Car className="h-4 w-4 text-primary" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-primary">15</div>
+            <div className="text-2xl font-bold text-primary">{stats?.vendidos || 0}</div>
           </CardContent>
         </Card>
       </div>
@@ -140,6 +95,8 @@ export default function Estoque() {
               <Input
                 placeholder="Buscar por marca, modelo ou placa..."
                 className="w-full pl-10"
+                value={filtro}
+                onChange={(e) => setFiltro(e.target.value)}
               />
             </div>
             <Button variant="outline" size="default">
@@ -171,43 +128,72 @@ export default function Estoque() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockVeiculos.map((veiculo) => (
-                <TableRow key={veiculo.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="font-medium">
-                      {veiculo.marca} {veiculo.modelo}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3 text-muted-foreground" />
-                      {veiculo.ano}
-                    </div>
-                  </TableCell>
-                  <TableCell>{veiculo.cor}</TableCell>
-                  <TableCell>{veiculo.km.toLocaleString()} km</TableCell>
-                  <TableCell className="font-medium">
-                    R$ {veiculo.preco.toLocaleString()}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(veiculo.status)}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3 text-muted-foreground" />
-                      {veiculo.local}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-2 justify-end">
-                      <Button variant="ghost" size="sm">
-                        Ver
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        Editar
-                      </Button>
-                    </div>
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    Carregando veículos...
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : veiculos.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} className="text-center py-8">
+                    Nenhum veículo encontrado
+                  </TableCell>
+                </TableRow>
+              ) : (
+                veiculos.map((veiculo) => (
+                  <TableRow key={veiculo.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="font-medium">
+                        {(veiculo.modelo as any)?.marca || "N/A"} {(veiculo.modelo as any)?.nome || "N/A"}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3 text-muted-foreground" />
+                        {veiculo.ano_modelo || "N/A"}
+                      </div>
+                    </TableCell>
+                    <TableCell>{veiculo.cor || "N/A"}</TableCell>
+                    <TableCell>{veiculo.hodometro ? `${Number(veiculo.hodometro).toLocaleString()} km` : "N/A"}</TableCell>
+                    <TableCell className="font-medium">
+                      {veiculo.preco_venda ? `R$ ${Number(veiculo.preco_venda).toLocaleString()}` : "N/A"}
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant="secondary" 
+                        className={
+                          veiculo.estado_venda === "disponivel" ? "bg-success/10 text-success" :
+                          veiculo.estado_venda === "reservado" ? "bg-warning/10 text-warning" :
+                          veiculo.estado_venda === "vendido" ? "bg-destructive/10 text-destructive" :
+                          ""
+                        }
+                      >
+                        {veiculo.estado_venda === "disponivel" ? "Disponível" :
+                         veiculo.estado_venda === "reservado" ? "Reservado" :
+                         veiculo.estado_venda === "vendido" ? "Vendido" :
+                         veiculo.estado_venda}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3 text-muted-foreground" />
+                        {(veiculo.local as any)?.nome || "N/A"}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex gap-2 justify-end">
+                        <Button variant="ghost" size="sm">
+                          Ver
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          Editar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

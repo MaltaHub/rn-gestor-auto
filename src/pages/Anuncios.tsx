@@ -10,93 +10,11 @@ import {
   ExternalLink,
   Calendar
 } from 'lucide-react';
-
-// Mock data para anúncios
-const mockAnuncios = [
-  {
-    id: "1",
-    titulo: "Toyota Corolla 2023 - Seminovo",
-    plataforma: "WebMotors",
-    status: "ativo",
-    visualizacoes: 156,
-    favoritos: 23,
-    mensagens: 8,
-    dataPublicacao: "2024-01-15",
-    preco: 95000,
-    veiculo: {
-      marca: "Toyota",
-      modelo: "Corolla",
-      ano: 2023,
-      km: 15000
-    }
-  },
-  {
-    id: "2",
-    titulo: "Honda Civic 2022 - Excelente Estado",
-    plataforma: "OLX Autos",
-    status: "pausado",
-    visualizacoes: 89,
-    favoritos: 12,
-    mensagens: 3,
-    dataPublicacao: "2024-01-12",
-    preco: 88000,
-    veiculo: {
-      marca: "Honda",
-      modelo: "Civic",
-      ano: 2022,
-      km: 25000
-    }
-  },
-  {
-    id: "3",
-    titulo: "VW Jetta 2023 - Zero KM",
-    plataforma: "Localiza Seminovos",
-    status: "ativo",
-    visualizacoes: 203,
-    favoritos: 31,
-    mensagens: 15,
-    dataPublicacao: "2024-01-18",
-    preco: 102000,
-    veiculo: {
-      marca: "Volkswagen",
-      modelo: "Jetta",
-      ano: 2023,
-      km: 8000
-    }
-  },
-];
-
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "ativo":
-      return <Badge variant="secondary" className="bg-success/10 text-success">Ativo</Badge>;
-    case "pausado":
-      return <Badge variant="secondary" className="bg-warning/10 text-warning">Pausado</Badge>;
-    case "encerrado":
-      return <Badge variant="secondary" className="bg-destructive/10 text-destructive">Encerrado</Badge>;
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
-
-const getPlatformBadge = (plataforma: string) => {
-  const colors = {
-    "WebMotors": "bg-blue-100 text-blue-700",
-    "OLX Autos": "bg-purple-100 text-purple-700",
-    "Localiza Seminovos": "bg-green-100 text-green-700",
-  };
-  
-  return (
-    <Badge 
-      variant="outline" 
-      className={colors[plataforma as keyof typeof colors] || ""}
-    >
-      {plataforma}
-    </Badge>
-  );
-};
+import { useAnuncios, useAnunciosStats } from '@/hooks/useAnuncios';
 
 export default function Anuncios() {
+  const { data: anuncios = [], isLoading } = useAnuncios();
+  const { data: stats } = useAnunciosStats();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -119,7 +37,7 @@ export default function Anuncios() {
             <Megaphone className="h-4 w-4 text-success" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-success">89</div>
+            <div className="text-2xl font-bold text-success">{stats?.ativos || 0}</div>
             <p className="text-xs text-muted-foreground">
               +5 esta semana
             </p>
@@ -132,7 +50,7 @@ export default function Anuncios() {
             <Eye className="h-4 w-4 text-info" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-info">12.4k</div>
+            <div className="text-2xl font-bold text-info">{stats?.visualizacoes ? `${Math.floor(stats.visualizacoes / 1000)}k` : "0"}</div>
             <p className="text-xs text-muted-foreground">
               +18% vs mês anterior
             </p>
@@ -145,7 +63,7 @@ export default function Anuncios() {
             <Heart className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-destructive">456</div>
+            <div className="text-2xl font-bold text-destructive">{stats?.favoritos || 0}</div>
             <p className="text-xs text-muted-foreground">
               +12% vs mês anterior
             </p>
@@ -158,7 +76,7 @@ export default function Anuncios() {
             <MessageCircle className="h-4 w-4 text-warning" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-warning">127</div>
+            <div className="text-2xl font-bold text-warning">{stats?.mensagens || 0}</div>
             <p className="text-xs text-muted-foreground">
               +8% vs mês anterior
             </p>
@@ -167,8 +85,44 @@ export default function Anuncios() {
       </div>
 
       {/* Anúncios Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {mockAnuncios.map((anuncio) => (
+      {isLoading ? (
+        <div className="text-center py-8">Carregando anúncios...</div>
+      ) : anuncios.length === 0 ? (
+        <div className="text-center py-8">Nenhum anúncio encontrado</div>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {anuncios.map((anuncio) => {
+            const getStatusBadge = (status: string) => {
+              switch (status) {
+                case "ativo":
+                  return <Badge variant="secondary" className="bg-success/10 text-success">Ativo</Badge>;
+                case "pausado":
+                  return <Badge variant="secondary" className="bg-warning/10 text-warning">Pausado</Badge>;
+                case "encerrado":
+                  return <Badge variant="secondary" className="bg-destructive/10 text-destructive">Encerrado</Badge>;
+                default:
+                  return <Badge variant="outline">{status}</Badge>;
+              }
+            };
+
+            const getPlatformBadge = (plataforma: string) => {
+              const colors = {
+                "WebMotors": "bg-blue-100 text-blue-700",
+                "OLX Autos": "bg-purple-100 text-purple-700",
+                "Localiza Seminovos": "bg-green-100 text-green-700",
+              };
+              
+              return (
+                <Badge 
+                  variant="outline" 
+                  className={colors[plataforma as keyof typeof colors] || ""}
+                >
+                  {plataforma}
+                </Badge>
+              );
+            };
+
+            return (
           <Card key={anuncio.id} className="shadow-card hover:shadow-dropdown transition-all duration-200">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start gap-2">
@@ -234,8 +188,10 @@ export default function Anuncios() {
               </div>
             </CardContent>
           </Card>
-        ))}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Quick Actions */}
       <Card className="shadow-card">
