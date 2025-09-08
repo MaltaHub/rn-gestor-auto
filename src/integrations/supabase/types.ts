@@ -14,6 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      anuncios: {
+        Row: {
+          autor_id: string | null
+          created_at: string
+          data_publicacao: string | null
+          data_vencimento: string | null
+          descricao: string | null
+          descricao_original: string | null
+          favoritos: number | null
+          id: string
+          id_fisico: string | null
+          link_anuncio: string | null
+          mensagens: number | null
+          plataforma_id: string
+          preco: number | null
+          preco_original: number | null
+          repetido_id: string | null
+          status: string
+          tenant_id: string
+          tipo_anuncio: string
+          tipo_id_fisico: string | null
+          titulo: string
+          titulo_original: string | null
+          updated_at: string
+          veiculo_loja_id: string | null
+          visualizacoes: number | null
+        }
+        Insert: {
+          autor_id?: string | null
+          created_at?: string
+          data_publicacao?: string | null
+          data_vencimento?: string | null
+          descricao?: string | null
+          descricao_original?: string | null
+          favoritos?: number | null
+          id?: string
+          id_fisico?: string | null
+          link_anuncio?: string | null
+          mensagens?: number | null
+          plataforma_id: string
+          preco?: number | null
+          preco_original?: number | null
+          repetido_id?: string | null
+          status?: string
+          tenant_id: string
+          tipo_anuncio: string
+          tipo_id_fisico?: string | null
+          titulo: string
+          titulo_original?: string | null
+          updated_at?: string
+          veiculo_loja_id?: string | null
+          visualizacoes?: number | null
+        }
+        Update: {
+          autor_id?: string | null
+          created_at?: string
+          data_publicacao?: string | null
+          data_vencimento?: string | null
+          descricao?: string | null
+          descricao_original?: string | null
+          favoritos?: number | null
+          id?: string
+          id_fisico?: string | null
+          link_anuncio?: string | null
+          mensagens?: number | null
+          plataforma_id?: string
+          preco?: number | null
+          preco_original?: number | null
+          repetido_id?: string | null
+          status?: string
+          tenant_id?: string
+          tipo_anuncio?: string
+          tipo_id_fisico?: string | null
+          titulo?: string
+          titulo_original?: string | null
+          updated_at?: string
+          veiculo_loja_id?: string | null
+          visualizacoes?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anuncios_plataforma_id_fkey"
+            columns: ["plataforma_id"]
+            isOneToOne: false
+            referencedRelation: "plataforma"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anuncios_repetido_id_fkey"
+            columns: ["repetido_id"]
+            isOneToOne: false
+            referencedRelation: "repetidos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anuncios_veiculo_loja_id_fkey"
+            columns: ["veiculo_loja_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos_loja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       caracteristicas: {
         Row: {
           id: string
@@ -276,7 +379,6 @@ export type Database = {
           min_hodometro: number
           modelo_id: string
           pasta_fotos: string | null
-          preco_padrao: number
           registrado_em: string | null
           tenant_id: string
         }
@@ -289,7 +391,6 @@ export type Database = {
           min_hodometro: number
           modelo_id: string
           pasta_fotos?: string | null
-          preco_padrao: number
           registrado_em?: string | null
           tenant_id: string
         }
@@ -302,7 +403,6 @@ export type Database = {
           min_hodometro?: number
           modelo_id?: string
           pasta_fotos?: string | null
-          preco_padrao?: number
           registrado_em?: string | null
           tenant_id?: string
         }
@@ -628,6 +728,36 @@ export type Database = {
         }
         Relationships: []
       }
+      view_sugestoes_repetidos: {
+        Row: {
+          ano_fabricacao: number | null
+          ano_modelo: number | null
+          caracteristicas_ids: string[] | null
+          cor: string | null
+          max_hodometro: number | null
+          min_hodometro: number | null
+          modelo_id: string | null
+          qtd_veiculos: number | null
+          tenant_id: string | null
+          veiculo_ids: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_modelo_id_fkey"
+            columns: ["modelo_id"]
+            isOneToOne: false
+            referencedRelation: "modelo"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "veiculos_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       view_veiculos_expandidos: {
         Row: {
           ano_fabricacao: number | null
@@ -713,6 +843,10 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: boolean
+      }
+      validate_repetido: {
+        Args: { p_repetido_id: string }
+        Returns: Json
       }
     }
     Enums: {

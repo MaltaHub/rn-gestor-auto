@@ -11,10 +11,12 @@ import {
   Calendar
 } from 'lucide-react';
 import { useAnuncios, useAnunciosStats } from '@/hooks/useAnuncios';
+import { useVeiculosOciosos } from '@/hooks/useVeiculosOciosos';
 
 export default function Anuncios() {
   const { data: anuncios = [], isLoading } = useAnuncios();
   const { data: stats } = useAnunciosStats();
+  const { data: ociosos = [], isLoading: loadingOciosos } = useVeiculosOciosos();
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -83,6 +85,44 @@ export default function Anuncios() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Veículos Ociosos */}
+      <Card className="shadow-card">
+        <CardHeader>
+          <CardTitle>Veículos Ociosos</CardTitle>
+          <CardDescription>Itens do estoque sem anúncio ativo</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {loadingOciosos ? (
+            <div className="text-sm text-muted-foreground">Carregando veículos ociosos...</div>
+          ) : ociosos.length === 0 ? (
+            <div className="text-sm text-success">Nenhum veículo ocioso. Ótimo trabalho!</div>
+          ) : (
+            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
+              {ociosos.map((v) => (
+                <Card key={v.veiculo_loja_id} className="shadow-inner">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base">
+                      {(v.modelo?.marca || '')} {(v.modelo?.nome || '')} {v.ano_modelo || ''}
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Placa {v.placa} • {v.hodometro ? `${v.hodometro.toLocaleString()} km` : '—'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-0 flex items-center justify-between gap-2">
+                    <div className="text-sm font-medium">
+                      {v.preco ? `R$ ${v.preco.toLocaleString()}` : 'Sem preço'}
+                    </div>
+                    <Button size="sm" variant="outline">
+                      <Plus className="mr-1 h-3 w-3" /> Criar Anúncio
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Anúncios Grid */}
       {isLoading ? (
