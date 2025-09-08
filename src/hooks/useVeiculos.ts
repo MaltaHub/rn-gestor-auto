@@ -7,9 +7,10 @@ export function useVeiculos(filter?: string) {
 
   return useQuery({
     queryKey: ["veiculos", selectedLojaId, filter],
-    enabled: !!selectedLojaId,
+    enabled: true, // Always enabled, let the query logic handle filtering
     queryFn: async () => {
       console.log("🔍 useVeiculos: Fetching vehicles for loja:", selectedLojaId);
+      console.log("🔍 useVeiculos: Filter:", filter);
       
       if (!selectedLojaId) {
         console.log("❌ useVeiculos: No selectedLojaId");
@@ -38,8 +39,12 @@ export function useVeiculos(filter?: string) {
             chassi,
             modelo(*)
           )
-        `)
-        .eq("loja_id", selectedLojaId);
+        `);
+
+      // Apply loja filter if selectedLojaId is provided
+      if (selectedLojaId) {
+        query = query.eq("loja_id", selectedLojaId);
+      }
 
       // Apply filter if provided
       if (filter) {
