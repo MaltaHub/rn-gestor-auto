@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDeviceVersion } from "@/hooks/use-mobile";
+import { TenantProvider } from "@/contexts/TenantContext";
 
 // Desktop Pages
 import Index from "./pages/Index";
@@ -55,103 +56,105 @@ const App = () => {
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/create-tenant" element={<CreateTenant />} />
-            <Route path="/join-tenant/:token" element={<JoinTenant />} />
-            
-            {/* Dashboard routes with responsive components */}
-            <Route path="/dashboard" element={
-              <ResponsiveRoute 
-                desktopComponent={
-                  <DashboardLayout>
-                    <Dashboard />
-                  </DashboardLayout>
-                }
-                mobileComponent={<DashboardMobile />}
-              />
-            } />
-            <Route path="/dashboard/vitrine" element={
-              <ResponsiveRoute 
-                desktopComponent={
-                  <DashboardLayout>
-                    <Vitrine />
-                  </DashboardLayout>
-                }
-                mobileComponent={<VitrineMobile />}
-              />
-            } />
-            <Route path="/dashboard/estoque-geral" element={
-              <ResponsiveRoute 
-                desktopComponent={
-                  <DashboardLayout>
-                    <EstoqueGeral />
-                  </DashboardLayout>
-                }
-                mobileComponent={<EstoqueGeralMobile />}
-              />
-            } />
-            <Route path="/dashboard/anuncios" element={
-              <ResponsiveRoute 
-                desktopComponent={
-                  <DashboardLayout>
-                    <Anuncios />
-                  </DashboardLayout>
-                }
-                mobileComponent={<AnunciosMobile />}
-              />
-            } />
-            
-            {/* Remaining desktop-only routes */}
-            <Route path="/dashboard/vendas" element={
-              <DashboardLayout>
-                <Vendas />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/company" element={
-              <DashboardLayout>
-                <Company />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/vitrine/cadastrar" element={
-              <DashboardLayout>
-                <CadastrarVeiculo />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/estoque-geral/cadastrar" element={
-              <DashboardLayout>
-                <CadastrarVeiculo />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/anuncios/criar" element={
-              <DashboardLayout>
-                <CriarAnuncio />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/configuracoes" element={
-              <DashboardLayout>
-                <ConfiguracoesGerais />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/veiculo/:id" element={
-              <DashboardLayout>
-                <VerVeiculo />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/veiculo/:id/editar" element={
-              <DashboardLayout>
-                <EditarVeiculo />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/veiculo/:id/loja/:lojaId/editar" element={
-              <DashboardLayout>
-                <EditarVeiculoLoja />
-              </DashboardLayout>
-            } />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+          <TenantProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/create-tenant" element={<CreateTenant />} />
+              <Route path="/join-tenant/:token" element={<JoinTenant />} />
+              
+              {/* Dashboard routes with responsive components */}
+              <Route path="/dashboard" element={
+                <ResponsiveRoute 
+                  desktopComponent={
+                    <DashboardLayout>
+                      <Dashboard />
+                    </DashboardLayout>
+                  }
+                  mobileComponent={<DashboardMobile />}
+                />
+              } />
+              <Route path="/dashboard/vitrine" element={
+                <ResponsiveRoute 
+                  desktopComponent={
+                    <DashboardLayout>
+                      <Vitrine />
+                    </DashboardLayout>
+                  }
+                  mobileComponent={<VitrineMobile />}
+                />
+              } />
+              <Route path="/dashboard/estoque-geral" element={
+                <ResponsiveRoute 
+                  desktopComponent={
+                    <DashboardLayout>
+                      <EstoqueGeral />
+                    </DashboardLayout>
+                  }
+                  mobileComponent={<EstoqueGeralMobile />}
+                />
+              } />
+              <Route path="/dashboard/anuncios" element={
+                <ResponsiveRoute 
+                  desktopComponent={
+                    <DashboardLayout>
+                      <Anuncios />
+                    </DashboardLayout>
+                  }
+                  mobileComponent={<AnunciosMobile />}
+                />
+              } />
+              
+              {/* Remaining desktop-only routes */}
+              <Route path="/dashboard/vendas" element={
+                <DashboardLayout>
+                  <Vendas />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/company" element={
+                <DashboardLayout>
+                  <Company />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/vitrine/cadastrar" element={
+                <DashboardLayout>
+                  <CadastrarVeiculo />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/estoque-geral/cadastrar" element={
+                <DashboardLayout>
+                  <CadastrarVeiculo />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/anuncios/criar" element={
+                <DashboardLayout>
+                  <CriarAnuncio />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/configuracoes" element={
+                <DashboardLayout>
+                  <ConfiguracoesGerais />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/veiculo/:id" element={
+                <DashboardLayout>
+                  <VerVeiculo />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/veiculo/:id/editar" element={
+                <DashboardLayout>
+                  <EditarVeiculo />
+                </DashboardLayout>
+              } />
+              <Route path="/dashboard/veiculo/:id/loja/:lojaId/editar" element={
+                <DashboardLayout>
+                  <EditarVeiculoLoja />
+                </DashboardLayout>
+              } />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </TenantProvider>
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
