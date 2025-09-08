@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useEstoqueGeral, useEstoqueGeralStats } from '@/hooks/useEstoqueGeral';
+import { VeiculoLojaManager } from '@/components/VeiculoLojaManager';
 
 export default function EstoqueGeral() {
   const [filtro, setFiltro] = useState("");
@@ -128,19 +129,20 @@ export default function EstoqueGeral() {
                 <TableHead>KM</TableHead>
                 <TableHead>Preço</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Lojas</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     Carregando veículos...
                   </TableCell>
                 </TableRow>
               ) : veiculos.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={9} className="text-center py-8">
                     Nenhum veículo encontrado
                   </TableCell>
                 </TableRow>
@@ -179,21 +181,24 @@ export default function EstoqueGeral() {
                          veiculo.estado_venda === "vendido" ? "Vendido" :
                          veiculo.estado_venda}
                       </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="sm" asChild>
-                          <Link to={`/dashboard/veiculo/${veiculo.id}`}>
-                            Ver
-                          </Link>
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to={`/dashboard/veiculo/${veiculo.id}/editar`}>
-                            Editar
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
+                     </TableCell>
+                     <TableCell>
+                       <VeiculoLojaManager veiculoId={veiculo.id} />
+                     </TableCell>
+                     <TableCell className="text-right">
+                       <div className="flex gap-2 justify-end">
+                         <Button variant="ghost" size="sm" asChild>
+                           <Link to={`/dashboard/veiculo/${veiculo.id}`}>
+                             Ver
+                           </Link>
+                         </Button>
+                         <Button variant="outline" size="sm" asChild>
+                           <Link to={`/dashboard/veiculo/${veiculo.id}/editar`}>
+                             Editar
+                           </Link>
+                         </Button>
+                       </div>
+                     </TableCell>
                   </TableRow>
                 ))
               )}

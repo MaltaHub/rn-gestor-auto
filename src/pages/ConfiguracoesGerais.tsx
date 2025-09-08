@@ -52,9 +52,8 @@ export default function ConfiguracoesGerais() {
   const { currentTenant } = useTenant();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [currentTab, setCurrentTab] = useState("plataformas");
   
-  // Separate state for each tab to prevent conflicts
+  // Separate state for each tab to prevent conflicts with unique keys
   const [tabStates, setTabStates] = useState<TabStates>({
     plataforma: { editingItem: null, newItemName: "", dialogOpen: false },
     locais: { editingItem: null, newItemName: "", dialogOpen: false },
@@ -364,7 +363,7 @@ export default function ConfiguracoesGerais() {
         </p>
       </div>
 
-      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
+      <Tabs defaultValue="plataformas" className="space-y-4">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="plataformas">Plataformas</TabsTrigger>
           <TabsTrigger value="locais">Locais</TabsTrigger>

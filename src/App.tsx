@@ -12,7 +12,7 @@ import Vitrine from "./pages/Vitrine";
 import EstoqueGeral from "./pages/EstoqueGeral";
 import Anuncios from "./pages/Anuncios";
 import Vendas from "./pages/Vendas";
-import TenantProfile from "./pages/TenantProfile";
+import Company from "./pages/Company";
 import NotFound from "./pages/NotFound";
 import CreateTenant from "./pages/CreateTenant";
 import JoinTenant from "./pages/JoinTenant";
@@ -21,7 +21,6 @@ import CriarAnuncio from "./pages/CriarAnuncio";
 import ConfiguracoesGerais from "./pages/ConfiguracoesGerais";
 import VerVeiculo from "./pages/VerVeiculo";
 import EditarVeiculo from "./pages/EditarVeiculo";
-import VeiculosLoja from "./pages/VeiculosLoja";
 
 const queryClient = new QueryClient();
 
@@ -64,14 +63,9 @@ const App = () => {
                 <Vendas />
               </DashboardLayout>
             } />
-            <Route path="/dashboard/veiculos-loja" element={
+            <Route path="/dashboard/company" element={
               <DashboardLayout>
-                <VeiculosLoja />
-              </DashboardLayout>
-            } />
-            <Route path="/dashboard/tenant-profile" element={
-              <DashboardLayout>
-                <TenantProfile />
+                <Company />
               </DashboardLayout>
             } />
             <Route path="/dashboard/vitrine/cadastrar" element={

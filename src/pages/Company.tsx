@@ -21,7 +21,7 @@ const roleColors = {
   user: "outline"
 } as const;
 
-export default function TenantProfile() {
+export default function Company() {
   const { currentTenant, loading: tenantLoading } = useTenant();
   const { members, isLoading: membersLoading } = useTenantMembers();
   const { user } = useAuth();
@@ -31,7 +31,7 @@ export default function TenantProfile() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Building2 className="h-8 w-8 animate-pulse text-primary mx-auto mb-4" />
-          <p>Carregando informações do tenant...</p>
+          <p>Carregando informações da empresa...</p>
         </div>
       </div>
     );
@@ -42,7 +42,7 @@ export default function TenantProfile() {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Building2 className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground">Nenhum tenant encontrado</p>
+          <p className="text-muted-foreground">Nenhuma empresa encontrada</p>
         </div>
       </div>
     );
@@ -53,8 +53,8 @@ export default function TenantProfile() {
       <div className="flex items-center gap-4">
         <Building2 className="h-8 w-8 text-primary" />
         <div>
-          <h1 className="text-3xl font-bold">Perfil do Tenant</h1>
-          <p className="text-muted-foreground">Gerencie as informações e colaboradores do seu tenant</p>
+          <h1 className="text-3xl font-bold">Company</h1>
+          <p className="text-muted-foreground">Gerencie as informações e colaboradores da sua empresa</p>
         </div>
       </div>
 
@@ -75,7 +75,7 @@ export default function TenantProfile() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Building2 className="h-5 w-5" />
-                Informações do Tenant
+                Informações da Empresa
               </CardTitle>
               <CardDescription>
                 Dados básicos da sua organização
