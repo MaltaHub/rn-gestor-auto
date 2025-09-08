@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { useDeviceVersion } from "@/hooks/use-mobile";
+
+// Desktop Pages
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -23,7 +26,25 @@ import VerVeiculo from "./pages/VerVeiculo";
 import EditarVeiculo from "./pages/EditarVeiculo";
 import EditarVeiculoLoja from "./pages/EditarVeiculoLoja";
 
+// Mobile Pages
+import DashboardMobile from "./pages/mobile/DashboardMobile";
+import EstoqueGeralMobile from "./pages/mobile/EstoqueGeralMobile";
+import VitrineMobile from "./pages/mobile/VitrineMobile";
+import AnunciosMobile from "./pages/mobile/AnunciosMobile";
+
 const queryClient = new QueryClient();
+
+// Component to choose between mobile and desktop versions
+function ResponsiveRoute({ 
+  desktopComponent, 
+  mobileComponent 
+}: { 
+  desktopComponent: React.ReactNode; 
+  mobileComponent: React.ReactNode; 
+}) {
+  const { shouldUseMobile } = useDeviceVersion();
+  return shouldUseMobile ? mobileComponent : desktopComponent;
+}
 
 const App = () => {
   console.log("🚀 App: Starting application...");
@@ -39,26 +60,50 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/create-tenant" element={<CreateTenant />} />
             <Route path="/join-tenant/:token" element={<JoinTenant />} />
+            
+            {/* Dashboard routes with responsive components */}
             <Route path="/dashboard" element={
-              <DashboardLayout>
-                <Dashboard />
-              </DashboardLayout>
+              <ResponsiveRoute 
+                desktopComponent={
+                  <DashboardLayout>
+                    <Dashboard />
+                  </DashboardLayout>
+                }
+                mobileComponent={<DashboardMobile />}
+              />
             } />
             <Route path="/dashboard/vitrine" element={
-              <DashboardLayout>
-                <Vitrine />
-              </DashboardLayout>
+              <ResponsiveRoute 
+                desktopComponent={
+                  <DashboardLayout>
+                    <Vitrine />
+                  </DashboardLayout>
+                }
+                mobileComponent={<VitrineMobile />}
+              />
             } />
             <Route path="/dashboard/estoque-geral" element={
-              <DashboardLayout>
-                <EstoqueGeral />
-              </DashboardLayout>
+              <ResponsiveRoute 
+                desktopComponent={
+                  <DashboardLayout>
+                    <EstoqueGeral />
+                  </DashboardLayout>
+                }
+                mobileComponent={<EstoqueGeralMobile />}
+              />
             } />
             <Route path="/dashboard/anuncios" element={
-              <DashboardLayout>
-                <Anuncios />
-              </DashboardLayout>
+              <ResponsiveRoute 
+                desktopComponent={
+                  <DashboardLayout>
+                    <Anuncios />
+                  </DashboardLayout>
+                }
+                mobileComponent={<AnunciosMobile />}
+              />
             } />
+            
+            {/* Remaining desktop-only routes */}
             <Route path="/dashboard/vendas" element={
               <DashboardLayout>
                 <Vendas />

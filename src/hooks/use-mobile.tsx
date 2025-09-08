@@ -17,3 +17,14 @@ export function useIsMobile() {
 
   return !!isMobile;
 }
+
+// Hook para detectar qual versão usar
+export function useDeviceVersion() {
+  const isMobile = useIsMobile();
+  
+  return {
+    isMobile,
+    version: isMobile ? 'mobile' : 'desktop',
+    shouldUseMobile: isMobile
+  };
+}
