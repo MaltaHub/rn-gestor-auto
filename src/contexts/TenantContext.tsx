@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -20,11 +21,34 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const [selectedLojaId, setSelectedLojaId] = useState<string | null>(() =>
     localStorage.getItem("loja_id")
   );
+  const [previousLojaId, setPreviousLojaId] = useState<string | null>(selectedLojaId);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (selectedLojaId) localStorage.setItem("loja_id", selectedLojaId);
     else localStorage.removeItem("loja_id");
   }, [selectedLojaId]);
+
+  // Reload page when loja changes on context-sensitive routes
+  useEffect(() => {
+    if (previousLojaId && selectedLojaId && previousLojaId !== selectedLojaId) {
+      const contextSensitiveRoutes = [
+        '/dashboard/vitrine',
+        '/dashboard/veiculo/'
+      ];
+      
+      const isContextSensitive = contextSensitiveRoutes.some(route => 
+        location.pathname.startsWith(route)
+      );
+      
+      if (isContextSensitive) {
+        console.log("🔄 Loja changed, reloading context-sensitive page");
+        window.location.reload();
+      }
+    }
+    setPreviousLojaId(selectedLojaId);
+  }, [selectedLojaId, previousLojaId, location.pathname]);
 
   // Auth-aware setup for tenant queries
   const { user, loading: authLoading } = useAuth();

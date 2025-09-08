@@ -21,6 +21,7 @@ import CriarAnuncio from "./pages/CriarAnuncio";
 import ConfiguracoesGerais from "./pages/ConfiguracoesGerais";
 import VerVeiculo from "./pages/VerVeiculo";
 import EditarVeiculo from "./pages/EditarVeiculo";
+import EditarVeiculoLoja from "./pages/EditarVeiculoLoja";
 
 const queryClient = new QueryClient();
 
@@ -96,6 +97,11 @@ const App = () => {
             <Route path="/dashboard/veiculo/:id/editar" element={
               <DashboardLayout>
                 <EditarVeiculo />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/veiculo/:id/loja/:lojaId/editar" element={
+              <DashboardLayout>
+                <EditarVeiculoLoja />
               </DashboardLayout>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

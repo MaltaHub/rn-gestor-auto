@@ -1,7 +1,8 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Store, Plus, Edit, Trash2 } from "lucide-react";
+import { Store, Plus, Edit, Trash2, Settings } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -204,6 +205,15 @@ export function VeiculoLojaManager({ veiculoId }: VeiculoLojaManagerProps) {
                 </div>
               ) : (
                 <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    asChild
+                  >
+                    <Link to={`/dashboard/veiculo/${veiculoId}/loja/${vl.loja_id}/editar`}>
+                      <Settings className="h-3 w-3" />
+                    </Link>
+                  </Button>
                   <Button
                     size="sm"
                     variant="ghost"
