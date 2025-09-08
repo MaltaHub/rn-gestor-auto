@@ -42,7 +42,7 @@ export default function ConfiguracoesGerais() {
   const queryClient = useQueryClient();
   const [editingItem, setEditingItem] = useState<any>(null);
   const [newItemName, setNewItemName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState<{[key: string]: boolean}>({});
   const [currentTab, setCurrentTab] = useState("plataformas");
 
   // Queries
@@ -97,7 +97,7 @@ export default function ConfiguracoesGerais() {
       queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
       toast({ title: "Sucesso", description: "Item criado com sucesso!" });
       setNewItemName("");
-      setDialogOpen(false);
+      setDialogOpen({});
     },
     onError: (error: any) => {
       toast({ 
@@ -163,13 +163,12 @@ export default function ConfiguracoesGerais() {
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           {title}
-          <Dialog open={dialogOpen && currentTab === table} onOpenChange={setDialogOpen}>
+          <Dialog open={dialogOpen[table] || false} onOpenChange={(open) => setDialogOpen({...dialogOpen, [table]: open})}>
             <DialogTrigger asChild>
               <Button 
                 size="sm" 
                 onClick={() => {
-                  setCurrentTab(table);
-                  setDialogOpen(true);
+                  setDialogOpen({...dialogOpen, [table]: true});
                 }}
               >
                 <Plus className="h-4 w-4 mr-2" />

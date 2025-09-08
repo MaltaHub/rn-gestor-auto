@@ -21,6 +21,7 @@ import CriarAnuncio from "./pages/CriarAnuncio";
 import ConfiguracoesGerais from "./pages/ConfiguracoesGerais";
 import VerVeiculo from "./pages/VerVeiculo";
 import EditarVeiculo from "./pages/EditarVeiculo";
+import VeiculosLoja from "./pages/VeiculosLoja";
 
 const queryClient = new QueryClient();
 
@@ -61,6 +62,11 @@ const App = () => {
             <Route path="/dashboard/vendas" element={
               <DashboardLayout>
                 <Vendas />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/veiculos-loja" element={
+              <DashboardLayout>
+                <VeiculosLoja />
               </DashboardLayout>
             } />
             <Route path="/dashboard/tenant-profile" element={

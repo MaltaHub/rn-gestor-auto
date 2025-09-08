@@ -39,6 +39,7 @@ const navigationItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Estoque Geral", url: "/dashboard/estoque-geral", icon: Package },
   { title: "Vitrine", url: "/dashboard/vitrine", icon: Store },
+  { title: "Veículos nas Lojas", url: "/dashboard/veiculos-loja", icon: Building2 },
   { title: "Anúncios", url: "/dashboard/anuncios", icon: Megaphone },
   { title: "Vendas", url: "/dashboard/vendas", icon: TrendingUp },
   { title: "Configurações", url: "/dashboard/configuracoes", icon: Cog },
