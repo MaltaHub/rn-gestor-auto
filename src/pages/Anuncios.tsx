@@ -103,7 +103,7 @@ export default function Anuncios() {
           ) : (
             <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
               {ociosos.map((v) => (
-                <Card key={v.veiculo_loja_id} className="shadow-inner">
+                <Card key={v.id} className="shadow-inner">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base">
                       {(v.modelo?.marca || '')} {(v.modelo?.nome || '')} {v.ano_modelo || ''}

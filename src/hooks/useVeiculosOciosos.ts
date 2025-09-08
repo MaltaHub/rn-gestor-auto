@@ -3,17 +3,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/contexts/TenantContext";
 
 export type VeiculoOcioso = {
-  veiculo_loja_id: string;
-  veiculo_id: string;
+  id: string;
   placa: string;
   cor: string;
   ano_modelo: number | null;
+  ano_fabricacao: number | null;
   hodometro: number | null;
-  repetido_id: string | null;
   preco: number | null;
   modelo: {
-    marca: string | null;
-    nome: string | null;
+    id: string;
+    marca: string;
+    nome: string;
   } | null;
 };
 
@@ -24,63 +24,95 @@ export function useVeiculosOciosos() {
     queryKey: ["veiculos-ociosos", selectedLojaId],
     enabled: !!selectedLojaId,
     queryFn: async (): Promise<VeiculoOcioso[]> => {
-      // 1) Buscar veículos da loja selecionada
-      const { data: veiculosLoja, error: errV } = await (supabase as any)
+      if (!selectedLojaId) return [];
+
+      // Get all vehicles available in the selected store
+      const { data: veiculosLoja, error: veiculosError } = await supabase
         .from("veiculos_loja")
-        .select(
-          `id, preco,
-           veiculos:veiculo_id (
-             id, repetido_id, hodometro, ano_modelo, placa, cor,
-             modelo:modelo_id ( marca, nome )
-           )
-          `
-        )
+        .select(`
+          id,
+          veiculo_id,
+          preco,
+          veiculos!inner(
+            id,
+            hodometro,
+            placa,
+            cor,
+            ano_modelo,
+            ano_fabricacao,
+            repetido_id,
+            modelo(id, marca, nome)
+          )
+        `)
         .eq("loja_id", selectedLojaId);
 
-      if (errV) throw errV;
+      if (veiculosError) throw veiculosError;
 
-      const itens = (veiculosLoja || []).map((v: any) => ({
-        veiculo_loja_id: v.id as string,
-        veiculo_id: v.veiculos?.id as string,
-        placa: v.veiculos?.placa as string,
-        cor: v.veiculos?.cor as string,
-        ano_modelo: v.veiculos?.ano_modelo as number | null,
-        hodometro: v.veiculos?.hodometro ? Number(v.veiculos.hodometro) : null,
-        repetido_id: v.veiculos?.repetido_id as string | null,
-        preco: v.preco ? Number(v.preco) : null,
-        modelo: v.veiculos?.modelo || null,
-      })) as VeiculoOcioso[];
+      if (!veiculosLoja || veiculosLoja.length === 0) return [];
 
-      // 2) Buscar anúncios que cobrem esses itens (individual ou repetido)
-      const veiculoLojaIds = itens.map((i) => i.veiculo_loja_id);
+      // Get the tenant context
+      const { data: loja } = await supabase
+        .from("lojas")
+        .select("tenant_id")
+        .eq("id", selectedLojaId)
+        .single();
 
-      const { data: anuncios, error: errA } = await (supabase as any)
+      if (!loja) return [];
+
+      // Get all active/paused advertisements for this tenant
+      const { data: anuncios, error: anunciosError } = await supabase
         .from("anuncios")
-        .select("id, status, tipo_anuncio, veiculo_loja_id, repetido_id")
-        .in("status", ["ativo", "pausado", "vendido"]) // considera qualquer um diferente de removido
-        .or(`veiculo_loja_id.in.(${veiculoLojaIds.join(',')}) , repetido_id.is.not.null`);
+        .select("veiculo_loja_id, repetido_id")
+        .eq("tenant_id", loja.tenant_id)
+        .in("status", ["ativo", "pausado"]);
 
-      if (errA) throw errA;
+      if (anunciosError) throw anunciosError;
 
-      const setCobertosPorVeiculo = new Set(
-        (anuncios || [])
-          .filter((a: any) => !!a.veiculo_loja_id)
-          .map((a: any) => a.veiculo_loja_id as string)
-      );
-      const setCobertosPorRepetido = new Set(
-        (anuncios || [])
-          .filter((a: any) => !!a.repetido_id)
-          .map((a: any) => a.repetido_id as string)
-      );
+      // Get unique repetido_ids from vehicles and advertisements
+      const repetidosFromVeiculos = veiculosLoja
+        .map(vl => vl.veiculos.repetido_id)
+        .filter(Boolean);
+      
+      const repetidosFromAnuncios = anuncios
+        ?.map(a => a.repetido_id)
+        .filter(Boolean) || [];
 
-      // 3) Filtrar ociosos
-      const ociosos = itens.filter((i) => {
-        if (i.repetido_id && setCobertosPorRepetido.has(i.repetido_id)) return false;
-        if (setCobertosPorVeiculo.has(i.veiculo_loja_id)) return false;
-        return true;
-      });
+      const allRepetidosIds = [...new Set([...repetidosFromVeiculos, ...repetidosFromAnuncios])];
 
-      return ociosos;
+      // Get vehicles that are already covered by repetido advertisements
+      let veiculosComAnuncioRepetido: any[] = [];
+      if (allRepetidosIds.length > 0) {
+        const { data, error: repetidoError } = await supabase
+          .from("veiculos")
+          .select("id")
+          .in("repetido_id", allRepetidosIds);
+
+        if (repetidoError) throw repetidoError;
+        veiculosComAnuncioRepetido = data || [];
+      }
+
+      // Get IDs of vehicles that are already advertised or covered by repetido ads
+      const anunciadosIds = new Set([
+        ...(anuncios?.map(a => a.veiculo_loja_id).filter(Boolean) || []),
+        ...(veiculosComAnuncioRepetido?.map(v => v.id) || [])
+      ]);
+
+      // Filter out vehicles that are already advertised
+      const veiculosOciosos = veiculosLoja?.filter(vl => 
+        !anunciadosIds.has(vl.id) && !anunciadosIds.has(vl.veiculo_id)
+      ) || [];
+
+      // Transform to the expected format
+      return veiculosOciosos.map(vl => ({
+        id: vl.veiculo_id,
+        placa: vl.veiculos.placa,
+        cor: vl.veiculos.cor,
+        hodometro: vl.veiculos.hodometro,
+        ano_modelo: vl.veiculos.ano_modelo,
+        ano_fabricacao: vl.veiculos.ano_fabricacao,
+        modelo: vl.veiculos.modelo,
+        preco: vl.preco,
+      }));
     },
   });
 }

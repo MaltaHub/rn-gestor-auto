@@ -122,7 +122,7 @@ export default function CadastrarVeiculo() {
           estado_veiculo: values.estado_veiculo,
           observacao: values.observacao,
           estagio_documentacao: values.estagio_documentacao,
-          local: selectedLojaId,
+          
           tenant_id: currentTenant.id,
         })
         .select()

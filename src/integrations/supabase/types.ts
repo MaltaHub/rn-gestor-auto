@@ -563,7 +563,7 @@ export type Database = {
           estagio_documentacao: string | null
           hodometro: number
           id: string
-          local: string
+          local: string | null
           modelo_id: string | null
           observacao: string | null
           placa: string
@@ -585,7 +585,7 @@ export type Database = {
           estagio_documentacao?: string | null
           hodometro: number
           id?: string
-          local: string
+          local?: string | null
           modelo_id?: string | null
           observacao?: string | null
           placa: string
@@ -607,7 +607,7 @@ export type Database = {
           estagio_documentacao?: string | null
           hodometro?: number
           id?: string
-          local?: string
+          local?: string | null
           modelo_id?: string | null
           observacao?: string | null
           placa?: string
