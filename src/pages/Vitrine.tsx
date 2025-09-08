@@ -22,7 +22,7 @@ import {
 import { Link } from 'react-router-dom';
 import { useVeiculos, useVeiculosStats } from '@/hooks/useVeiculos';
 
-export default function Estoque() {
+export default function Vitrine() {
   const [filtro, setFiltro] = useState("");
   const { data: veiculos = [], isLoading } = useVeiculos(filtro);
   const { data: stats } = useVeiculosStats();
@@ -31,13 +31,13 @@ export default function Estoque() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestão de Estoque</h1>
-          <p className="text-muted-foreground">Gerencie todos os veículos disponíveis</p>
+          <h1 className="text-3xl font-bold">Vitrine da Loja</h1>
+          <p className="text-muted-foreground">Veículos disponíveis na loja selecionada</p>
         </div>
         <Button variant="hero" size="lg" asChild>
-          <Link to="/dashboard/estoque/cadastrar">
+          <Link to="/dashboard/vitrine/cadastrar">
             <Plus className="mr-2 h-4 w-4" />
-            Adicionar Veículo
+            Adicionar à Vitrine
           </Link>
         </Button>
       </div>
@@ -113,8 +113,8 @@ export default function Estoque() {
       {/* Vehicles Table */}
       <Card className="shadow-card">
         <CardHeader>
-          <CardTitle>Veículos em Estoque</CardTitle>
-          <CardDescription>Lista completa dos veículos disponíveis</CardDescription>
+          <CardTitle>Veículos na Vitrine</CardTitle>
+          <CardDescription>Lista dos veículos na vitrine da loja selecionada</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>

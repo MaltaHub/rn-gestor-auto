@@ -8,7 +8,8 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Estoque from "./pages/Estoque";
+import Vitrine from "./pages/Vitrine";
+import EstoqueGeral from "./pages/EstoqueGeral";
 import Anuncios from "./pages/Anuncios";
 import Vendas from "./pages/Vendas";
 import TenantProfile from "./pages/TenantProfile";
@@ -39,9 +40,14 @@ const App = () => {
                 <Dashboard />
               </DashboardLayout>
             } />
-            <Route path="/dashboard/estoque" element={
+            <Route path="/dashboard/vitrine" element={
               <DashboardLayout>
-                <Estoque />
+                <Vitrine />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/estoque-geral" element={
+              <DashboardLayout>
+                <EstoqueGeral />
               </DashboardLayout>
             } />
             <Route path="/dashboard/anuncios" element={
@@ -59,7 +65,12 @@ const App = () => {
                 <TenantProfile />
               </DashboardLayout>
             } />
-            <Route path="/dashboard/estoque/cadastrar" element={
+            <Route path="/dashboard/vitrine/cadastrar" element={
+              <DashboardLayout>
+                <CadastrarVeiculo />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/estoque-geral/cadastrar" element={
               <DashboardLayout>
                 <CadastrarVeiculo />
               </DashboardLayout>

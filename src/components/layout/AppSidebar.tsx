@@ -34,7 +34,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTenant } from "@/contexts/TenantContext";
 
 const navigationItems = [
-  { title: "Estoque", url: "/dashboard/estoque", icon: Package },
+  { title: "Estoque Geral", url: "/dashboard/estoque-geral", icon: Package },
+  { title: "Vitrine", url: "/dashboard/vitrine", icon: Store },
   { title: "Anúncios", url: "/dashboard/anuncios", icon: Megaphone },
   { title: "Vendas", url: "/dashboard/vendas", icon: TrendingUp },
   { title: "Perfil do Tenant", url: "/dashboard/tenant-profile", icon: Settings },
