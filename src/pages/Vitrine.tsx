@@ -186,11 +186,15 @@ export default function Vitrine() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="sm">
-                          Ver
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link to={`/dashboard/veiculo/${veiculo.id}`}>
+                            Ver
+                          </Link>
                         </Button>
-                        <Button variant="outline" size="sm">
-                          Editar
+                        <Button variant="outline" size="sm" asChild>
+                          <Link to={`/dashboard/veiculo/${veiculo.id}/editar`}>
+                            Editar
+                          </Link>
                         </Button>
                       </div>
                     </TableCell>
