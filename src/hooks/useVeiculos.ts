@@ -9,7 +9,14 @@ export function useVeiculos(filter?: string) {
     queryKey: ["veiculos", selectedLojaId, filter],
     enabled: !!selectedLojaId,
     queryFn: async () => {
-      // First get vehicles that are available in the selected store
+      console.log("🔍 useVeiculos: Fetching vehicles for loja:", selectedLojaId);
+      
+      if (!selectedLojaId) {
+        console.log("❌ useVeiculos: No selectedLojaId");
+        return [];
+      }
+
+      // Build the query properly for vehicles in the selected store
       let query = supabase
         .from("veiculos_loja")
         .select(`
@@ -32,9 +39,9 @@ export function useVeiculos(filter?: string) {
             modelo(*)
           )
         `)
-        .eq("loja_id", selectedLojaId)
-        .order("veiculos.registrado_em", { ascending: false });
+        .eq("loja_id", selectedLojaId);
 
+      // Apply filter if provided
       if (filter) {
         query = query.or(
           `veiculos.placa.ilike.%${filter}%,veiculos.modelo.marca.ilike.%${filter}%,veiculos.modelo.nome.ilike.%${filter}%`
@@ -42,15 +49,24 @@ export function useVeiculos(filter?: string) {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      if (error) {
+        console.error("❌ useVeiculos: Query error:", error);
+        throw error;
+      }
+      
+      console.log("✅ useVeiculos: Raw data:", data);
       
       // Transform the data to match the expected format
-      return data?.map(item => ({
+      const transformedData = data?.map(item => ({
         ...item.veiculos,
         preco_loja: item.preco,
         // Add local info for compatibility
         local: { nome: "Loja Selecionada" }
       })) || [];
+      
+      console.log("✅ useVeiculos: Transformed data:", transformedData);
+      return transformedData;
     },
   });
 }
