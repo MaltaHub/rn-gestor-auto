@@ -66,7 +66,7 @@ export function VeiculoLojaManager({ veiculoId }: VeiculoLojaManagerProps) {
       await addMutation.mutateAsync({
         veiculo_id: veiculoId,
         loja_id: selectedLojaId,
-        preco: preco ? parseFloat(preco) : null,
+        preco: null, // Preço será definido na vitrine
       });
       
       setIsDialogOpen(false);
@@ -142,17 +142,6 @@ export function VeiculoLojaManager({ veiculoId }: VeiculoLojaManagerProps) {
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <Label htmlFor="preco">Preço (opcional)</Label>
-                  <Input
-                    id="preco"
-                    type="number"
-                    step="0.01"
-                    value={preco}
-                    onChange={(e) => setPreco(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
               </div>
               <DialogFooter>
                 <Button onClick={handleAdd} disabled={addMutation.isPending}>
@@ -175,65 +164,29 @@ export function VeiculoLojaManager({ veiculoId }: VeiculoLojaManagerProps) {
                   R$ {Number(vl.preco).toLocaleString()}
                 </Badge>
               )}
+              <Badge variant="outline" className="text-xs">
+                {vl.pasta_fotos ? "Com fotos" : "Sem fotos"}
+              </Badge>
             </div>
             
             <div className="flex items-center gap-1">
-              {editingItem?.id === vl.id ? (
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={editPreco}
-                    onChange={(e) => setEditPreco(e.target.value)}
-                    placeholder="Preço"
-                    className="w-24 h-8"
-                  />
-                  <Button
-                    size="sm"
-                    onClick={handleUpdate}
-                    disabled={updateMutation.isPending}
-                  >
-                    {updateMutation.isPending ? "..." : "✓"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setEditingItem(null)}
-                  >
-                    ✕
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    asChild
-                  >
-                    <Link to={`/dashboard/veiculo/${veiculoId}/loja/${vl.loja_id}/editar`}>
-                      <Settings className="h-3 w-3" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setEditingItem(vl);
-                      setEditPreco(vl.preco?.toString() || "");
-                    }}
-                  >
-                    <Edit className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => handleRemove(vl.id)}
-                    disabled={removeMutation.isPending}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
-                </>
-              )}
+              <Button
+                size="sm"
+                variant="ghost"
+                asChild
+              >
+                <Link to={`/dashboard/veiculo/${veiculoId}/loja/${vl.loja_id}/editar`}>
+                  <Settings className="h-3 w-3" />
+                </Link>
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleRemove(vl.id)}
+                disabled={removeMutation.isPending}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
             </div>
           </div>
         ))}

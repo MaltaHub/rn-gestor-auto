@@ -11,6 +11,7 @@ type TenantContextType = {
   currentTenant: Tenant | null;
   lojas: Loja[];
   selectedLojaId: string | null;
+  selectedLoja: Loja | null;
   setSelectedLojaId: (id: string | null) => void;
   loading: boolean;
 };
@@ -125,15 +126,20 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     }
   }, [selectedLojaId, lojasData]);
 
+  const selectedLoja = useMemo(() => {
+    return lojasData?.find(loja => loja.id === selectedLojaId) || null;
+  }, [lojasData, selectedLojaId]);
+
   const value = useMemo(
     () => ({
       currentTenant: currentTenant ?? null,
       lojas: lojasData ?? [],
       selectedLojaId,
+      selectedLoja,
       setSelectedLojaId,
       loading: loadingTenant || loadingLojas,
     }),
-    [currentTenant, lojasData, selectedLojaId, loadingTenant, loadingLojas]
+    [currentTenant, lojasData, selectedLojaId, selectedLoja, loadingTenant, loadingLojas]
   );
 
   return <TenantContext.Provider value={value}>{children}</TenantContext.Provider>;

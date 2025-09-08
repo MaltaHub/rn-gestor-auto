@@ -43,6 +43,7 @@ export function useVeiculosParaAnuncio() {
           )
         `)
         .eq("loja_id", selectedLojaId)
+        .not("preco", "is", null) // Só veículos com preço definido podem ser anunciados
         .not("id", "in", `(
           SELECT veiculo_loja_id 
           FROM anuncios 
