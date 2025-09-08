@@ -833,6 +833,19 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_veiculos_ociosos: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          ano_fabricacao: number
+          ano_modelo: number
+          cor: string
+          hodometro: number
+          id: string
+          modelo: Json
+          placa: string
+          preco: number
+        }[]
+      }
       has_tenant_membership: {
         Args: { p_tenant_id: string }
         Returns: boolean
