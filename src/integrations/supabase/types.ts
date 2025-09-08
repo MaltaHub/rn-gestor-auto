@@ -529,27 +529,6 @@ export type Database = {
         }
         Relationships: []
       }
-      usuario: {
-        Row: {
-          email: string
-          id: string
-          nome: string
-          registrado_em: string | null
-        }
-        Insert: {
-          email: string
-          id?: string
-          nome: string
-          registrado_em?: string | null
-        }
-        Update: {
-          email?: string
-          id?: string
-          nome?: string
-          registrado_em?: string | null
-        }
-        Relationships: []
-      }
       veiculos: {
         Row: {
           ano_fabricacao: number | null
@@ -619,13 +598,6 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "veiculos_editado_por_fkey"
-            columns: ["editado_por"]
-            isOneToOne: false
-            referencedRelation: "usuario"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "veiculos_local_fkey"
             columns: ["local"]
             isOneToOne: false
@@ -637,13 +609,6 @@ export type Database = {
             columns: ["modelo_id"]
             isOneToOne: false
             referencedRelation: "modelo"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "veiculos_registrado_por_fkey"
-            columns: ["registrado_por"]
-            isOneToOne: false
-            referencedRelation: "usuario"
             referencedColumns: ["id"]
           },
           {
