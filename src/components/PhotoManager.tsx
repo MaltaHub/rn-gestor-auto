@@ -9,17 +9,42 @@ import {
   ImageIcon,
   Loader2,
   Eye,
-  X
+  X,
+  Star,
+  StarOff,
+  GripVertical
 } from 'lucide-react';
 import { PhotoGallery } from './PhotoGallery';
-import { useUploadVeiculoFoto, useDeleteVeiculoFoto } from '@/hooks/useVeiculo';
+import { SortablePhotoItem } from './SortablePhotoItem';
+import { useUploadVeiculoFoto, useDeleteVeiculoFoto, useUpdatePhotosOrder, useSetCoverPhoto } from '@/hooks/useVeiculo';
 import { toast } from 'sonner';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import {
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface Photo {
   name: string;
   url: string;
   size: number;
   lastModified: string;
+  ordem: number;
+  isCapa: boolean;
 }
 
 interface PhotoManagerProps {
@@ -32,14 +57,21 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [previewPhotos, setPreviewPhotos] = useState<File[]>([]);
   const [showGallery, setShowGallery] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadVeiculoFoto();
   const deleteMutation = useDeleteVeiculoFoto();
+  const updateOrderMutation = useUpdatePhotosOrder();
+  const setCoverMutation = useSetCoverPhoto();
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
-    if (!files) return;
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
+  const processFiles = useCallback((files: FileList | File[]) => {
     const validFiles: File[] = [];
     const newPreviews: File[] = [];
 
@@ -64,9 +96,15 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
       // Upload files sequentially to avoid overwhelming the server
       validFiles.forEach((file, index) => {
         setTimeout(() => {
+          const nextOrder = Math.max(...photos.map(p => p.ordem), -1) + 1 + index;
           uploadMutation.mutate({ veiculoId, file }, {
-            onSuccess: () => {
+            onSuccess: (fileName) => {
               setPreviewPhotos(prev => prev.filter(p => p !== file));
+              // Create metadata entry with order
+              updateOrderMutation.mutate({
+                veiculoId,
+                photos: [{ name: fileName, ordem: nextOrder }]
+              });
             },
             onError: () => {
               setPreviewPhotos(prev => prev.filter(p => p !== file));
@@ -75,12 +113,59 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
         }, index * 100); // Stagger uploads by 100ms
       });
     }
+  }, [veiculoId, uploadMutation, updateOrderMutation, photos]);
+
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files) return;
+
+    processFiles(files);
 
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  }, [veiculoId, uploadMutation]);
+  }, [processFiles]);
+
+  const handleDrop = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+
+    const files = event.dataTransfer.files;
+    if (files.length > 0) {
+      processFiles(files);
+    }
+  }, [processFiles]);
+
+  const handleDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    setIsDragOver(false);
+  }, []);
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = photos.findIndex(photo => photo.name === active.id);
+      const newIndex = photos.findIndex(photo => photo.name === over.id);
+
+      const newPhotos = arrayMove(photos, oldIndex, newIndex);
+      const updatedPhotos = newPhotos.map((photo, index) => ({
+        name: photo.name,
+        ordem: index
+      }));
+
+      updateOrderMutation.mutate({
+        veiculoId,
+        photos: updatedPhotos
+      });
+    }
+  };
 
   const togglePhotoSelection = (photoName: string) => {
     const newSelection = new Set(selectedPhotos);
@@ -112,6 +197,10 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleSetCover = (fileName: string) => {
+    setCoverMutation.mutate({ veiculoId, fileName });
   };
 
   if (isLoading) {
@@ -198,9 +287,21 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
         />
 
         {photos.length === 0 ? (
-          <div className="bg-muted/50 border-2 border-dashed border-border rounded-lg p-8 text-center">
+          <div 
+            className={`bg-muted/50 border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+              isDragOver ? 'border-primary bg-primary/5' : 'border-border'
+            }`}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
             <ImageIcon className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-            <p className="text-muted-foreground mb-4">Nenhuma foto adicionada ainda</p>
+            <p className="text-muted-foreground mb-4">
+              {isDragOver ? 'Solte as fotos aqui' : 'Nenhuma foto adicionada ainda'}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">
+              Arraste fotos para cá ou clique para selecionar
+            </p>
             <Button
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
@@ -234,49 +335,42 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
             )}
 
             {/* Uploaded photos */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {photos.map((photo) => (
-              <div
-                key={photo.name}
-                className={`relative group aspect-square bg-muted/50 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                  selectedPhotos.has(photo.name) 
-                    ? 'border-primary shadow-lg' 
-                    : 'border-transparent hover:border-border'
-                }`}
-                onClick={() => togglePhotoSelection(photo.name)}
+            <div 
+              className={`transition-colors rounded-lg ${
+                isDragOver ? 'bg-primary/5 border-2 border-dashed border-primary p-4' : ''
+              }`}
+              onDrop={handleDrop}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+            >
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
               >
-                <img
-                  src={photo.url}
-                  alt={photo.name}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                />
-                
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
-                
-                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      downloadPhoto(photo.url, photo.name);
-                    }}
-                  >
-                    <Download className="h-3 w-3" />
-                  </Button>
-                </div>
-
-                {selectedPhotos.has(photo.name) && (
-                  <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                    <div className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold">
-                      ✓
-                    </div>
+                <SortableContext items={photos.map(p => p.name)} strategy={verticalListSortingStrategy}>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {photos.map((photo) => (
+                      <SortablePhotoItem
+                        key={photo.name}
+                        photo={photo}
+                        isSelected={selectedPhotos.has(photo.name)}
+                        onToggleSelection={togglePhotoSelection}
+                        onDownload={downloadPhoto}
+                        onSetCover={handleSetCover}
+                        disabled={updateOrderMutation.isPending || setCoverMutation.isPending}
+                      />
+                    ))}
                   </div>
-                )}
-              </div>
-              ))}
+                </SortableContext>
+              </DndContext>
+              
+              {isDragOver && (
+                <div className="text-center py-8">
+                  <Upload className="h-8 w-8 mx-auto mb-2 text-primary" />
+                  <p className="text-primary font-medium">Solte as fotos para fazer upload</p>
+                </div>
+              )}
             </div>
           </div>
         )}

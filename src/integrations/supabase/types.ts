@@ -627,8 +627,47 @@ export type Database = {
           },
         ]
       }
+      veiculos_fotos_metadata: {
+        Row: {
+          created_at: string | null
+          foto_nome: string
+          id: string
+          is_capa: boolean | null
+          ordem: number | null
+          updated_at: string | null
+          veiculo_loja_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          foto_nome: string
+          id?: string
+          is_capa?: boolean | null
+          ordem?: number | null
+          updated_at?: string | null
+          veiculo_loja_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          foto_nome?: string
+          id?: string
+          is_capa?: boolean | null
+          ordem?: number | null
+          updated_at?: string | null
+          veiculo_loja_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "veiculos_fotos_metadata_veiculo_loja_id_fkey"
+            columns: ["veiculo_loja_id"]
+            isOneToOne: false
+            referencedRelation: "veiculos_loja"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       veiculos_loja: {
         Row: {
+          foto_capa: string | null
           id: string
           loja_id: string
           pasta_fotos: string | null
@@ -637,6 +676,7 @@ export type Database = {
           veiculo_id: string
         }
         Insert: {
+          foto_capa?: string | null
           id?: string
           loja_id: string
           pasta_fotos?: string | null
@@ -645,6 +685,7 @@ export type Database = {
           veiculo_id: string
         }
         Update: {
+          foto_capa?: string | null
           id?: string
           loja_id?: string
           pasta_fotos?: string | null
