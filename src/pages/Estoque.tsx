@@ -19,6 +19,7 @@ import {
   Calendar,
   MapPin 
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useVeiculos, useVeiculosStats } from '@/hooks/useVeiculos';
 
 export default function Estoque() {
@@ -33,9 +34,11 @@ export default function Estoque() {
           <h1 className="text-3xl font-bold">Gestão de Estoque</h1>
           <p className="text-muted-foreground">Gerencie todos os veículos disponíveis</p>
         </div>
-        <Button variant="hero" size="lg">
-          <Plus className="mr-2 h-4 w-4" />
-          Adicionar Veículo
+        <Button variant="hero" size="lg" asChild>
+          <Link to="/dashboard/estoque/cadastrar">
+            <Plus className="mr-2 h-4 w-4" />
+            Adicionar Veículo
+          </Link>
         </Button>
       </div>
 

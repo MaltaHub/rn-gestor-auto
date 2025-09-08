@@ -10,6 +10,7 @@ import {
   ExternalLink,
   Calendar
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAnuncios, useAnunciosStats } from '@/hooks/useAnuncios';
 import { useVeiculosOciosos } from '@/hooks/useVeiculosOciosos';
 
@@ -25,9 +26,11 @@ export default function Anuncios() {
           <h1 className="text-3xl font-bold">Gestão de Anúncios</h1>
           <p className="text-muted-foreground">Publique e acompanhe seus anúncios em múltiplas plataformas</p>
         </div>
-        <Button variant="hero" size="lg">
-          <Plus className="mr-2 h-4 w-4" />
-          Criar Anúncio
+        <Button variant="hero" size="lg" asChild>
+          <Link to="/dashboard/anuncios/criar">
+            <Plus className="mr-2 h-4 w-4" />
+            Criar Anúncio
+          </Link>
         </Button>
       </div>
 
