@@ -36,14 +36,37 @@ type Caracteristica = {
   nome: string;
 };
 
+type TabState = {
+  editingItem: any;
+  newItemName: string;
+  dialogOpen: boolean;
+};
+
+type TabStates = {
+  plataforma: TabState;
+  locais: TabState;
+  caracteristicas: TabState;
+};
+
 export default function ConfiguracoesGerais() {
   const { currentTenant } = useTenant();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [editingItem, setEditingItem] = useState<any>(null);
-  const [newItemName, setNewItemName] = useState("");
-  const [dialogOpen, setDialogOpen] = useState<{[key: string]: boolean}>({});
   const [currentTab, setCurrentTab] = useState("plataformas");
+  
+  // Separate state for each tab to prevent conflicts
+  const [tabStates, setTabStates] = useState<TabStates>({
+    plataforma: { editingItem: null, newItemName: "", dialogOpen: false },
+    locais: { editingItem: null, newItemName: "", dialogOpen: false },
+    caracteristicas: { editingItem: null, newItemName: "", dialogOpen: false },
+  });
+
+  const updateTabState = (table: keyof TabStates, updates: Partial<TabState>) => {
+    setTabStates(prev => ({
+      ...prev,
+      [table]: { ...prev[table], ...updates }
+    }));
+  };
 
   // Queries
   const { data: plataformas } = useQuery({
@@ -86,18 +109,20 @@ export default function ConfiguracoesGerais() {
   // Mutations
   const createMutation = useMutation({
     mutationFn: async ({ table, name }: { table: string; name: string }) => {
+      if (!name.trim()) throw new Error("Nome é obrigatório");
+      
       const data = table === "caracteristicas" 
-        ? { nome: name }
-        : { nome: name, tenant_id: currentTenant!.id };
+        ? { nome: name.trim() }
+        : { nome: name.trim(), tenant_id: currentTenant!.id };
       
       const { error } = await (supabase as any).from(table).insert(data);
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
+      const tableKey = variables.table as keyof TabStates;
       queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
       toast({ title: "Sucesso", description: "Item criado com sucesso!" });
-      setNewItemName("");
-      setDialogOpen({});
+      updateTabState(tableKey, { newItemName: "", dialogOpen: false });
     },
     onError: (error: any) => {
       toast({ 
@@ -110,16 +135,26 @@ export default function ConfiguracoesGerais() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ table, id, name }: { table: string; id: string; name: string }) => {
+      if (!name.trim()) throw new Error("Nome é obrigatório");
+      
       const { error } = await (supabase as any)
         .from(table)
-        .update({ nome: name })
+        .update({ nome: name.trim() })
         .eq("id", id);
       if (error) throw error;
     },
     onSuccess: (_, variables) => {
+      const tableKey = variables.table as keyof TabStates;
       queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
       toast({ title: "Sucesso", description: "Item atualizado com sucesso!" });
-      setEditingItem(null);
+      updateTabState(tableKey, { editingItem: null });
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Erro", 
+        description: error.message || "Erro ao atualizar item",
+        variant: "destructive" 
+      });
     },
   });
 
@@ -132,16 +167,38 @@ export default function ConfiguracoesGerais() {
       queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
       toast({ title: "Sucesso", description: "Item excluído com sucesso!" });
     },
+    onError: (error: any) => {
+      toast({ 
+        title: "Erro", 
+        description: error.message || "Erro ao excluir item",
+        variant: "destructive" 
+      });
+    },
   });
 
-  const handleCreate = (table: string) => {
-    if (!newItemName.trim()) return;
-    createMutation.mutate({ table, name: newItemName.trim() });
+  const handleCreate = (table: keyof TabStates) => {
+    const state = tabStates[table];
+    if (!state.newItemName.trim()) {
+      toast({ 
+        title: "Erro", 
+        description: "Nome é obrigatório",
+        variant: "destructive" 
+      });
+      return;
+    }
+    createMutation.mutate({ table, name: state.newItemName });
   };
 
-  const handleUpdate = (table: string, id: string, name: string) => {
-    if (!name.trim()) return;
-    updateMutation.mutate({ table, id, name: name.trim() });
+  const handleUpdate = (table: keyof TabStates, id: string, name: string) => {
+    if (!name.trim()) {
+      toast({ 
+        title: "Erro", 
+        description: "Nome é obrigatório",
+        variant: "destructive" 
+      });
+      return;
+    }
+    updateMutation.mutate({ table, id, name });
   };
 
   const handleDelete = (table: string, id: string) => {
@@ -156,20 +213,21 @@ export default function ConfiguracoesGerais() {
     title 
   }: { 
     items: any[], 
-    table: string, 
+    table: keyof TabStates, 
     title: string 
-  }) => (
+  }) => {
+    const currentState = tabStates[table];
+    
+    return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           {title}
-          <Dialog open={dialogOpen[table] || false} onOpenChange={(open) => setDialogOpen({...dialogOpen, [table]: open})}>
+          <Dialog open={currentState.dialogOpen} onOpenChange={(open) => updateTabState(table, { dialogOpen: open })}>
             <DialogTrigger asChild>
               <Button 
                 size="sm" 
-                onClick={() => {
-                  setDialogOpen({...dialogOpen, [table]: true});
-                }}
+                onClick={() => updateTabState(table, { dialogOpen: true })}
               >
                 <Plus className="h-4 w-4 mr-2" />
                 Adicionar
@@ -187,9 +245,15 @@ export default function ConfiguracoesGerais() {
                   <Label htmlFor="name">Nome</Label>
                   <Input
                     id="name"
-                    value={newItemName}
-                    onChange={(e) => setNewItemName(e.target.value)}
+                    value={currentState.newItemName}
+                    onChange={(e) => updateTabState(table, { newItemName: e.target.value })}
                     placeholder="Digite o nome..."
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleCreate(table);
+                      }
+                    }}
                   />
                 </div>
               </div>
@@ -207,34 +271,37 @@ export default function ConfiguracoesGerais() {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {items?.map((item) => (
+            {items?.map((item) => (
             <div key={item.id} className="flex items-center justify-between p-2 border rounded">
-              {editingItem?.id === item.id ? (
+              {currentState.editingItem?.id === item.id ? (
                 <div className="flex-1 flex items-center gap-2">
                   <Input
-                    value={editingItem.nome}
-                    onChange={(e) => setEditingItem({ ...editingItem, nome: e.target.value })}
+                    value={currentState.editingItem.nome}
+                    onChange={(e) => updateTabState(table, { 
+                      editingItem: { ...currentState.editingItem, nome: e.target.value }
+                    })}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") {
-                        handleUpdate(table, item.id, editingItem.nome);
+                        e.preventDefault();
+                        handleUpdate(table, item.id, currentState.editingItem.nome);
                       }
                       if (e.key === "Escape") {
-                        setEditingItem(null);
+                        updateTabState(table, { editingItem: null });
                       }
                     }}
                     autoFocus
                   />
                   <Button
                     size="sm"
-                    onClick={() => handleUpdate(table, item.id, editingItem.nome)}
+                    onClick={() => handleUpdate(table, item.id, currentState.editingItem.nome)}
                     disabled={updateMutation.isPending}
                   >
-                    Salvar
+                    {updateMutation.isPending ? "Salvando..." : "Salvar"}
                   </Button>
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setEditingItem(null)}
+                    onClick={() => updateTabState(table, { editingItem: null })}
                   >
                     Cancelar
                   </Button>
@@ -246,7 +313,7 @@ export default function ConfiguracoesGerais() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => setEditingItem(item)}
+                      onClick={() => updateTabState(table, { editingItem: item })}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -271,7 +338,8 @@ export default function ConfiguracoesGerais() {
         </div>
       </CardContent>
     </Card>
-  );
+    );
+  };
 
   if (!currentTenant) {
     return (

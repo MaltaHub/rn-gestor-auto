@@ -1,12 +1,15 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Upload, 
   Trash2, 
   Download, 
   ImageIcon,
-  Loader2
+  Loader2,
+  Eye,
+  X
 } from 'lucide-react';
 import { PhotoGallery } from './PhotoGallery';
 import { useUploadVeiculoFoto, useDeleteVeiculoFoto } from '@/hooks/useVeiculo';
@@ -27,13 +30,18 @@ interface PhotoManagerProps {
 
 export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps) {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+  const [previewPhotos, setPreviewPhotos] = useState<File[]>([]);
+  const [showGallery, setShowGallery] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadMutation = useUploadVeiculoFoto();
   const deleteMutation = useDeleteVeiculoFoto();
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
+
+    const validFiles: File[] = [];
+    const newPreviews: File[] = [];
 
     Array.from(files).forEach(file => {
       if (!file.type.startsWith('image/')) {
@@ -46,14 +54,33 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
         return;
       }
 
-      uploadMutation.mutate({ veiculoId, file });
+      validFiles.push(file);
+      newPreviews.push(file);
     });
+
+    if (validFiles.length > 0) {
+      setPreviewPhotos(prev => [...prev, ...newPreviews]);
+      
+      // Upload files sequentially to avoid overwhelming the server
+      validFiles.forEach((file, index) => {
+        setTimeout(() => {
+          uploadMutation.mutate({ veiculoId, file }, {
+            onSuccess: () => {
+              setPreviewPhotos(prev => prev.filter(p => p !== file));
+            },
+            onError: () => {
+              setPreviewPhotos(prev => prev.filter(p => p !== file));
+            }
+          });
+        }, index * 100); // Stagger uploads by 100ms
+      });
+    }
 
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }, [veiculoId, uploadMutation]);
 
   const togglePhotoSelection = (photoName: string) => {
     const newSelection = new Set(selectedPhotos);
@@ -90,10 +117,15 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
   if (isLoading) {
     return (
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin mr-2" />
-            <span>Carregando fotos...</span>
+        <CardContent className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-9 w-32" />
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Skeleton key={i} className="aspect-square rounded-lg" />
+            ))}
           </div>
         </CardContent>
       </Card>
@@ -113,6 +145,17 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
           </div>
 
           <div className="flex gap-2">
+            {photos.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowGallery(true)}
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Ver Galeria
+              </Button>
+            )}
+
             {selectedPhotos.size > 0 && (
               <Button
                 variant="destructive"
@@ -133,9 +176,9 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
-              disabled={uploadMutation.isPending}
+              disabled={uploadMutation.isPending || previewPhotos.length > 0}
             >
-              {uploadMutation.isPending ? (
+              {(uploadMutation.isPending || previewPhotos.length > 0) ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
@@ -168,8 +211,31 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {photos.map((photo) => (
+          <div className="space-y-4">
+            {/* Preview photos (being uploaded) */}
+            {previewPhotos.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-muted-foreground">Enviando...</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {previewPhotos.map((file, index) => (
+                    <div key={index} className="relative aspect-square bg-muted/50 rounded-lg overflow-hidden border border-dashed">
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt={`Preview ${index + 1}`}
+                        className="w-full h-full object-cover opacity-50"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Uploaded photos */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {photos.map((photo) => (
               <div
                 key={photo.name}
                 className={`relative group aspect-square bg-muted/50 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
@@ -210,7 +276,27 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
                   </div>
                 )}
               </div>
-            ))}
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Photo Gallery Modal */}
+        {showGallery && (
+          <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur">
+            <div className="flex items-center justify-between p-4 border-b">
+              <h2 className="text-lg font-semibold">Galeria de Fotos</h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowGallery(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="p-4 overflow-auto max-h-[calc(100vh-80px)]">
+              <PhotoGallery photos={photos} />
+            </div>
           </div>
         )}
       </CardContent>

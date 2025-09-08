@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface Photo {
   name: string;
@@ -17,18 +17,58 @@ interface PhotoGalleryProps {
 
 export function PhotoGallery({ photos, className = "" }: PhotoGalleryProps) {
   const [selectedPhoto, setSelectedPhoto] = useState<number | null>(null);
+  const [zoom, setZoom] = useState(1);
 
-  const nextPhoto = () => {
+  const nextPhoto = useCallback(() => {
     if (selectedPhoto !== null && selectedPhoto < photos.length - 1) {
       setSelectedPhoto(selectedPhoto + 1);
+      setZoom(1);
     }
-  };
+  }, [selectedPhoto, photos.length]);
 
-  const prevPhoto = () => {
+  const prevPhoto = useCallback(() => {
     if (selectedPhoto !== null && selectedPhoto > 0) {
       setSelectedPhoto(selectedPhoto - 1);
+      setZoom(1);
     }
-  };
+  }, [selectedPhoto]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (selectedPhoto === null) return;
+      
+      switch (e.key) {
+        case 'ArrowLeft':
+          e.preventDefault();
+          prevPhoto();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          nextPhoto();
+          break;
+        case 'Escape':
+          e.preventDefault();
+          setSelectedPhoto(null);
+          setZoom(1);
+          break;
+        case '+':
+        case '=':
+          e.preventDefault();
+          setZoom(prev => Math.min(prev + 0.25, 3));
+          break;
+        case '-':
+          e.preventDefault();
+          setZoom(prev => Math.max(prev - 0.25, 0.5));
+          break;
+      }
+    };
+
+    if (selectedPhoto !== null) {
+      document.addEventListener('keydown', handleKeyDown);
+      return () => document.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [selectedPhoto, nextPhoto, prevPhoto]);
 
   const downloadPhoto = (url: string, name: string) => {
     const link = document.createElement('a');
@@ -66,18 +106,36 @@ export function PhotoGallery({ photos, className = "" }: PhotoGalleryProps) {
         ))}
       </div>
 
-      <Dialog open={selectedPhoto !== null} onOpenChange={() => setSelectedPhoto(null)}>
-        <DialogContent className="max-w-4xl p-0 bg-background/95 backdrop-blur">
+      <Dialog open={selectedPhoto !== null} onOpenChange={() => { setSelectedPhoto(null); setZoom(1); }}>
+        <DialogContent className="max-w-6xl max-h-[95vh] p-0 bg-background/95 backdrop-blur overflow-hidden">
           {selectedPhoto !== null && (
             <div className="relative">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 z-10 bg-background/80 hover:bg-background"
-                onClick={() => setSelectedPhoto(null)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
+              <div className="absolute top-4 right-4 z-10 flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="bg-background/80 hover:bg-background"
+                  onClick={() => setZoom(prev => Math.min(prev + 0.25, 3))}
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="bg-background/80 hover:bg-background"
+                  onClick={() => setZoom(prev => Math.max(prev - 0.25, 0.5))}
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="bg-background/80 hover:bg-background"
+                  onClick={() => { setSelectedPhoto(null); setZoom(1); }}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
 
               {photos.length > 1 && selectedPhoto > 0 && (
                 <Button
@@ -110,17 +168,24 @@ export function PhotoGallery({ photos, className = "" }: PhotoGalleryProps) {
                 <Download className="h-4 w-4" />
               </Button>
 
-              <div className="aspect-video max-h-[80vh] flex items-center justify-center p-4">
+              <div className="flex-1 overflow-auto p-4 flex items-center justify-center">
                 <img
                   src={photos[selectedPhoto].url}
                   alt={`Foto ${selectedPhoto + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-lg"
+                  className="rounded-lg transition-transform duration-200 cursor-grab active:cursor-grabbing"
+                  style={{ 
+                    transform: `scale(${zoom})`,
+                    maxWidth: zoom === 1 ? '100%' : 'none',
+                    maxHeight: zoom === 1 ? '100%' : 'none'
+                  }}
+                  onClick={() => setZoom(prev => prev === 1 ? 2 : 1)}
+                  draggable={false}
                 />
               </div>
 
               <div className="absolute bottom-4 left-4 bg-background/80 px-3 py-1 rounded-md">
                 <span className="text-sm text-foreground">
-                  {selectedPhoto + 1} de {photos.length}
+                  {selectedPhoto + 1} de {photos.length} • {Math.round(zoom * 100)}%
                 </span>
               </div>
             </div>
