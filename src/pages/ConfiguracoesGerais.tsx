@@ -1,0 +1,333 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useTenant } from "@/contexts/TenantContext";
+import { useToast } from "@/hooks/use-toast";
+import { Plus, Trash2, Edit } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+
+type Plataforma = {
+  id: string;
+  nome: string;
+  tenant_id: string;
+};
+
+type Local = {
+  id: string;
+  nome: string;
+  tenant_id: string;
+};
+
+type Caracteristica = {
+  id: string;
+  nome: string;
+};
+
+export default function ConfiguracoesGerais() {
+  const { currentTenant } = useTenant();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [editingItem, setEditingItem] = useState<any>(null);
+  const [newItemName, setNewItemName] = useState("");
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState("plataformas");
+
+  // Queries
+  const { data: plataformas } = useQuery({
+    queryKey: ["plataformas", currentTenant?.id],
+    enabled: !!currentTenant?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("plataforma")
+        .select("*")
+        .eq("tenant_id", currentTenant!.id);
+      if (error) throw error;
+      return data as Plataforma[];
+    },
+  });
+
+  const { data: locais } = useQuery({
+    queryKey: ["locais", currentTenant?.id],
+    enabled: !!currentTenant?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locais")
+        .select("*")
+        .eq("tenant_id", currentTenant!.id);
+      if (error) throw error;
+      return data as Local[];
+    },
+  });
+
+  const { data: caracteristicas } = useQuery({
+    queryKey: ["caracteristicas"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("caracteristicas")
+        .select("*");
+      if (error) throw error;
+      return data as Caracteristica[];
+    },
+  });
+
+  // Mutations
+  const createMutation = useMutation({
+    mutationFn: async ({ table, name }: { table: string; name: string }) => {
+      const data = table === "caracteristicas" 
+        ? { nome: name }
+        : { nome: name, tenant_id: currentTenant!.id };
+      
+      const { error } = await (supabase as any).from(table).insert(data);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
+      toast({ title: "Sucesso", description: "Item criado com sucesso!" });
+      setNewItemName("");
+      setDialogOpen(false);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Erro", 
+        description: error.message || "Erro ao criar item",
+        variant: "destructive" 
+      });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: async ({ table, id, name }: { table: string; id: string; name: string }) => {
+      const { error } = await (supabase as any)
+        .from(table)
+        .update({ nome: name })
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
+      toast({ title: "Sucesso", description: "Item atualizado com sucesso!" });
+      setEditingItem(null);
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async ({ table, id }: { table: string; id: string }) => {
+      const { error } = await (supabase as any).from(table).delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [variables.table, currentTenant?.id] });
+      toast({ title: "Sucesso", description: "Item excluído com sucesso!" });
+    },
+  });
+
+  const handleCreate = (table: string) => {
+    if (!newItemName.trim()) return;
+    createMutation.mutate({ table, name: newItemName.trim() });
+  };
+
+  const handleUpdate = (table: string, id: string, name: string) => {
+    if (!name.trim()) return;
+    updateMutation.mutate({ table, id, name: name.trim() });
+  };
+
+  const handleDelete = (table: string, id: string) => {
+    if (confirm("Tem certeza que deseja excluir este item?")) {
+      deleteMutation.mutate({ table, id });
+    }
+  };
+
+  const ItemList = ({ 
+    items, 
+    table, 
+    title 
+  }: { 
+    items: any[], 
+    table: string, 
+    title: string 
+  }) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          {title}
+          <Dialog open={dialogOpen && currentTab === table} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                size="sm" 
+                onClick={() => {
+                  setCurrentTab(table);
+                  setDialogOpen(true);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Adicionar
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Adicionar {title.slice(0, -1)}</DialogTitle>
+                <DialogDescription>
+                  Digite o nome do novo item.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Nome</Label>
+                  <Input
+                    id="name"
+                    value={newItemName}
+                    onChange={(e) => setNewItemName(e.target.value)}
+                    placeholder="Digite o nome..."
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button 
+                  onClick={() => handleCreate(table)}
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? "Criando..." : "Criar"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2">
+          {items?.map((item) => (
+            <div key={item.id} className="flex items-center justify-between p-2 border rounded">
+              {editingItem?.id === item.id ? (
+                <div className="flex-1 flex items-center gap-2">
+                  <Input
+                    value={editingItem.nome}
+                    onChange={(e) => setEditingItem({ ...editingItem, nome: e.target.value })}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleUpdate(table, item.id, editingItem.nome);
+                      }
+                      if (e.key === "Escape") {
+                        setEditingItem(null);
+                      }
+                    }}
+                    autoFocus
+                  />
+                  <Button
+                    size="sm"
+                    onClick={() => handleUpdate(table, item.id, editingItem.nome)}
+                    disabled={updateMutation.isPending}
+                  >
+                    Salvar
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setEditingItem(null)}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  <span>{item.nome}</span>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setEditingItem(item)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => handleDelete(table, item.id)}
+                      disabled={deleteMutation.isPending}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )) || []}
+          {(!items || items.length === 0) && (
+            <p className="text-muted-foreground text-center py-4">
+              Nenhum item encontrado.
+            </p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  if (!currentTenant) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-muted-foreground">
+              Selecione um tenant para gerenciar configurações
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto p-6 space-y-8">
+      <div>
+        <h1 className="text-3xl font-bold">Configurações Gerais</h1>
+        <p className="text-muted-foreground">
+          Gerencie plataformas, locais, modelos e características
+        </p>
+      </div>
+
+      <Tabs value={currentTab} onValueChange={setCurrentTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="plataformas">Plataformas</TabsTrigger>
+          <TabsTrigger value="locais">Locais</TabsTrigger>
+          <TabsTrigger value="caracteristicas">Características</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="plataformas">
+          <ItemList 
+            items={plataformas || []} 
+            table="plataforma" 
+            title="Plataformas" 
+          />
+        </TabsContent>
+
+        <TabsContent value="locais">
+          <ItemList 
+            items={locais || []} 
+            table="locais" 
+            title="Locais" 
+          />
+        </TabsContent>
+
+        <TabsContent value="caracteristicas">
+          <ItemList 
+            items={caracteristicas || []} 
+            table="caracteristicas" 
+            title="Características" 
+          />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

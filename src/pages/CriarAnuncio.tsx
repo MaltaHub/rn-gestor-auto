@@ -16,6 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
+import { useVeiculosParaAnuncio } from "@/hooks/useVeiculosParaAnuncio";
+import { useRepetidosSugestoes } from "@/hooks/useRepetidosSugestoes";
 
 const criarAnuncioSchema = z.object({
   tipo_anuncio: z.enum(["individual", "repetido"]),
@@ -75,66 +77,11 @@ export default function CriarAnuncio() {
     },
   });
 
-  // Fetch veículos ociosos para anúncios individuais
-  const { data: veiculosOciosos } = useQuery({
-    queryKey: ["veiculos-ociosos", selectedLojaId],
-    enabled: !!selectedLojaId && tipoAnuncio === "individual",
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("veiculos_loja")
-        .select(`
-          id,
-          preco,
-          veiculos!inner(
-            id,
-            placa,
-            cor,
-            ano_modelo,
-            hodometro,
-            modelo(marca, nome)
-          )
-        `)
-        .eq("loja_id", selectedLojaId)
-        .not("id", "in", `(
-          SELECT veiculo_loja_id 
-          FROM anuncios 
-          WHERE veiculo_loja_id IS NOT NULL 
-          AND status IN ('ativo', 'pausado')
-        )`);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Fetch veículos disponíveis para anúncios individuais
+  const { data: veiculosParaAnuncio } = useVeiculosParaAnuncio();
 
-  // Fetch repetidos ociosos para anúncios de repetidos
-  const { data: repetidosOciosos } = useQuery({
-    queryKey: ["repetidos-ociosos", currentTenant?.id],
-    enabled: !!currentTenant?.id && tipoAnuncio === "repetido",
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("repetidos")
-        .select(`
-          id,
-          cor_padrao,
-          ano_modelo_padrao,
-          ano_fabricacao_padrao,
-          min_hodometro,
-          max_hodometro,
-          modelo(marca, nome)
-        `)
-        .eq("tenant_id", currentTenant?.id)
-        .not("id", "in", `(
-          SELECT repetido_id 
-          FROM anuncios 
-          WHERE repetido_id IS NOT NULL 
-          AND status IN ('ativo', 'pausado')
-        )`);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Fetch repetidos ociosos para anúncios de repetidos - usar sugestões
+  const { data: repetidosSugestoes } = useRepetidosSugestoes();
 
   const onSubmit = async (values: CriarAnuncioForm) => {
     if (!currentTenant?.id) {
@@ -162,7 +109,11 @@ export default function CriarAnuncio() {
         status: "ativo",
         ...(values.tipo_anuncio === "individual" 
           ? { veiculo_loja_id: values.veiculo_loja_id }
-          : { repetido_id: values.repetido_id }
+          : { 
+              // TODO: Implementar criação de repetido baseado na sugestão selecionada
+              // Por enquanto usar o ID da sugestão como string temporária
+              repetido_id: values.repetido_id || null
+            }
         ),
       };
 
@@ -266,10 +217,10 @@ export default function CriarAnuncio() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {veiculosOciosos?.map((item) => (
+                            {veiculosParaAnuncio?.map((item) => (
                               <SelectItem key={item.id} value={item.id}>
-                                {item.veiculos.placa} - {item.veiculos.modelo?.marca} {item.veiculos.modelo?.nome} 
-                                {item.veiculos.ano_modelo} ({item.veiculos.cor})
+                                {item.veiculo.placa} - {item.veiculo.modelo?.marca} {item.veiculo.modelo?.nome} 
+                                {item.veiculo.ano_modelo} ({item.veiculo.cor}) - R$ {item.preco?.toLocaleString()}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -294,10 +245,10 @@ export default function CriarAnuncio() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {repetidosOciosos?.map((repetido) => (
-                              <SelectItem key={repetido.id} value={repetido.id}>
-                                {repetido.modelo?.marca} {repetido.modelo?.nome} {repetido.ano_modelo_padrao} 
-                                ({repetido.cor_padrao}) - {repetido.min_hodometro}km a {repetido.max_hodometro}km
+                            {repetidosSugestoes?.map((sugestao) => (
+                              <SelectItem key={`${sugestao.modelo_id}-${sugestao.cor}-${sugestao.ano_modelo}`} value={`${sugestao.modelo_id}-${sugestao.cor}-${sugestao.ano_modelo}`}>
+                                {sugestao.cor} {sugestao.ano_modelo} ({sugestao.qtd_veiculos} veículos) 
+                                - {sugestao.min_hodometro}km a {sugestao.max_hodometro}km
                               </SelectItem>
                             ))}
                           </SelectContent>

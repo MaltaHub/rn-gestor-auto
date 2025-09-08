@@ -8,7 +8,9 @@ import {
   Store,
   LogOut,
   ChevronDown,
-  Settings
+  Settings,
+  Home,
+  Cog
 } from "lucide-react";
 import {
   Sidebar,
@@ -34,10 +36,12 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTenant } from "@/contexts/TenantContext";
 
 const navigationItems = [
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Estoque Geral", url: "/dashboard/estoque-geral", icon: Package },
   { title: "Vitrine", url: "/dashboard/vitrine", icon: Store },
   { title: "Anúncios", url: "/dashboard/anuncios", icon: Megaphone },
   { title: "Vendas", url: "/dashboard/vendas", icon: TrendingUp },
+  { title: "Configurações", url: "/dashboard/configuracoes", icon: Cog },
   { title: "Perfil do Tenant", url: "/dashboard/tenant-profile", icon: Settings },
 ];
 
@@ -147,6 +151,15 @@ export function AppSidebar() {
               </p>
             </div>
           )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleSignOut}
+            className="w-full justify-start text-muted-foreground hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4 mr-2" />
+            {!collapsed && "Sair"}
+          </Button>
         </div>
       </SidebarFooter>
     </Sidebar>

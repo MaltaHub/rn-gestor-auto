@@ -18,6 +18,7 @@ import CreateTenant from "./pages/CreateTenant";
 import JoinTenant from "./pages/JoinTenant";
 import CadastrarVeiculo from "./pages/CadastrarVeiculo";
 import CriarAnuncio from "./pages/CriarAnuncio";
+import ConfiguracoesGerais from "./pages/ConfiguracoesGerais";
 
 const queryClient = new QueryClient();
 
@@ -78,6 +79,11 @@ const App = () => {
             <Route path="/dashboard/anuncios/criar" element={
               <DashboardLayout>
                 <CriarAnuncio />
+              </DashboardLayout>
+            } />
+            <Route path="/dashboard/configuracoes" element={
+              <DashboardLayout>
+                <ConfiguracoesGerais />
               </DashboardLayout>
             } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
