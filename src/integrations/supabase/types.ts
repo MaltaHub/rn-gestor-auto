@@ -798,6 +798,13 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string
       }
+      get_pariedade_veiculos: {
+        Args: { p_tenant_id: string }
+        Returns: {
+          repetido_id: string
+          veiculo_id: string
+        }[]
+      }
       get_veiculos_ociosos: {
         Args: { p_tenant_id: string }
         Returns: {
