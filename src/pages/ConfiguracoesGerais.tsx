@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,10 +43,11 @@ type TabState = {
 };
 
 type TabStates = {
-  plataforma: TabState;
+  plataformas: TabState;
   locais: TabState;
   caracteristicas: TabState;
 };
+
 
 export default function ConfiguracoesGerais() {
   const { currentTenant } = useTenant();
@@ -55,10 +56,11 @@ export default function ConfiguracoesGerais() {
   
   // Separate state for each tab to prevent conflicts with unique keys
   const [tabStates, setTabStates] = useState<TabStates>({
-    plataforma: { editingItem: null, newItemName: "", dialogOpen: false },
-    locais: { editingItem: null, newItemName: "", dialogOpen: false },
-    caracteristicas: { editingItem: null, newItemName: "", dialogOpen: false },
-  });
+  plataformas: { editingItem: null, newItemName: "", dialogOpen: false },
+  locais: { editingItem: null, newItemName: "", dialogOpen: false },
+  caracteristicas: { editingItem: null, newItemName: "", dialogOpen: false },
+});
+
 
   const updateTabState = (table: keyof TabStates, updates: Partial<TabState>) => {
     setTabStates(prev => ({
@@ -66,6 +68,13 @@ export default function ConfiguracoesGerais() {
       [table]: { ...prev[table], ...updates }
     }));
   };
+
+  const memoizedUpdateTabState = useCallback((table: keyof TabStates, updates: Partial<TabState>) => {
+    setTabStates((prev) => ({
+      ...prev,
+      [table]: { ...prev[table], ...updates },
+    }));
+  }, []);
 
   // Queries
   const { data: plataformas } = useQuery({
@@ -241,19 +250,18 @@ export default function ConfiguracoesGerais() {
               </DialogHeader>
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name">Nome</Label>
-                  <Input
-                    id="name"
+                  <Label htmlFor="new-item-name">Nome</Label>
+                    <Input
+                    id="new-item-name"
+                    name="new-item-name"
                     value={currentState.newItemName}
-                    onChange={(e) => updateTabState(table, { newItemName: e.target.value })}
+                    onChange={(e) => setTabStates((prev) => ({
+                      ...prev,
+                      [table]: { ...prev[table], newItemName: e.target.value },
+                    }))}
                     placeholder="Digite o nome..."
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleCreate(table);
-                      }
-                    }}
-                  />
+                    autoComplete="off"
+                    />
                 </div>
               </div>
               <DialogFooter>
@@ -373,7 +381,7 @@ export default function ConfiguracoesGerais() {
         <TabsContent value="plataformas">
           <ItemList 
             items={plataformas || []} 
-            table="plataforma" 
+            table="plataformas" 
             title="Plataformas" 
           />
         </TabsContent>

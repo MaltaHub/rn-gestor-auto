@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -66,14 +66,30 @@ export default function CadastrarVeiculo() {
     },
   });
 
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setSelectedImages(prev => [...prev, ...files]);
-  };
+  // Fetch locais for dropdown
+  const { data: locais } = useQuery({
+    queryKey: ["locais", currentTenant?.id],
+    enabled: !!currentTenant?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locais")
+        .select("id, nome")
+        .eq("tenant_id", currentTenant?.id)
+        .order("nome", { ascending: true });
 
-  const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-  };
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const memoizedHandleImageSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    setSelectedImages((prev) => [...prev, ...files]);
+  }, []);
+
+  const memoizedRemoveImage = useCallback((index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+  }, []);
 
   const uploadImages = async (veiculoId: string) => {
     if (!selectedImages.length || !currentTenant?.id || !selectedLojaId) return;
@@ -465,7 +481,7 @@ export default function CadastrarVeiculo() {
                   multiple
                   accept="image/*"
                   className="hidden"
-                  onChange={handleImageSelect}
+                  onChange={memoizedHandleImageSelect}
                 />
               </div>
 
@@ -481,7 +497,7 @@ export default function CadastrarVeiculo() {
                         variant="destructive"
                         size="sm"
                         className="absolute -top-2 -right-2 h-6 w-6 rounded-full p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeImage(index)}
+                        onClick={() => memoizedRemoveImage(index)}
                       >
                         <X className="h-3 w-3" />
                       </Button>
