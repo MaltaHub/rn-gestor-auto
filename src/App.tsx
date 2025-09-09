@@ -43,8 +43,8 @@ function ResponsiveRoute({
   desktopComponent: React.ReactNode; 
   mobileComponent: React.ReactNode; 
 }) {
-  const { shouldUseMobile } = useDeviceVersion();
-  return shouldUseMobile ? mobileComponent : desktopComponent;
+  const { isMobile } = useDeviceVersion();
+  return isMobile ? mobileComponent : desktopComponent;
 }
 
 const App = () => {

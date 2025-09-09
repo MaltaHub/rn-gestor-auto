@@ -117,6 +117,24 @@ export default function DashboardMobile() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Vitrine */}
+          <Card className="shadow-card">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-8 w-8 text-warning" />
+                  <div>
+                    <h3 className="font-medium">Vitrine</h3>
+                    <p className="text-sm text-muted-foreground">Visualize os veículos em destaque</p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <Link to="/dashboard/vitrine">Ver</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* FAB - Floating Action Button */}

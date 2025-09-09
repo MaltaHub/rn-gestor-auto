@@ -122,81 +122,88 @@ export default function VitrineMobile() {
               </CardContent>
             </Card>
           ) : (
-            veiculos.map((veiculoLoja) => (
-              <Card key={veiculoLoja.id} className="shadow-card">
-                <CardContent className="p-4">
-                  <div className="flex items-start gap-3 mb-3">
-                    {veiculoLoja.foto_capa && (
-                      <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0">
-                        <img
-                          src={veiculoLoja.foto_capa}
-                          alt="Capa do veículo"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-sm truncate">
-                        {veiculoLoja.veiculo.modelo?.marca || "N/A"} {veiculoLoja.veiculo.modelo?.nome || "N/A"}
-                      </h3>
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-muted-foreground font-mono">
-                          {veiculoLoja.veiculo.placa || "N/A"}
-                        </p>
-                        <Badge 
-                          variant="secondary" 
-                          className={
-                            veiculoLoja.veiculo.estado_venda === "disponivel" ? "bg-success/10 text-success" :
-                            veiculoLoja.veiculo.estado_venda === "reservado" ? "bg-warning/10 text-warning" :
-                            veiculoLoja.veiculo.estado_venda === "vendido" ? "bg-destructive/10 text-destructive" :
-                            ""
-                          }
-                        >
-                          {veiculoLoja.veiculo.estado_venda === "disponivel" ? "Disp." :
-                           veiculoLoja.veiculo.estado_venda === "reservado" ? "Res." :
-                           veiculoLoja.veiculo.estado_venda === "vendido" ? "Vend." :
-                           veiculoLoja.veiculo.estado_venda}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-3 w-3" />
-                      {veiculoLoja.veiculo.ano_modelo || "N/A"}
-                    </div>
-                    <div>Cor: {veiculoLoja.veiculo.cor || "N/A"}</div>
-                    <div>KM: {veiculoLoja.veiculo.hodometro ? `${Number(veiculoLoja.veiculo.hodometro).toLocaleString()}` : "N/A"}</div>
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      {veiculoLoja.veiculo.local?.nome || "N/A"}
-                    </div>
-                  </div>
+            veiculos.map((veiculoLoja) => {
+              // Garantir que a foto de capa seja exibida corretamente para cada veículo
+              if (!veiculoLoja.foto_capa) {
+                console.warn(`Veículo ${veiculoLoja.veiculo.id} não possui foto de capa associada.`);
+              }
 
-                  {/* Preço editável */}
-                  <div className="mb-3">
-                    <PrecoVitrine 
-                      veiculoLojaId={veiculoLoja.id}
-                      precoAtual={veiculoLoja.preco}
-                    />
-                  </div>
+              return (
+                <Card key={veiculoLoja.id} className="shadow-card">
+                  <CardContent className="p-4">
+                    <div className="flex items-start gap-3 mb-3">
+                      {veiculoLoja.foto_capa && (
+                        <div className="w-16 h-12 rounded overflow-hidden flex-shrink-0">
+                          <img
+                            src={veiculoLoja.foto_capa}
+                            alt="Capa do veículo"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm truncate">
+                          {veiculoLoja.veiculo.modelo?.marca || "N/A"} {veiculoLoja.veiculo.modelo?.nome || "N/A"}
+                        </h3>
+                        <div className="flex items-center justify-between mt-1">
+                          <p className="text-xs text-muted-foreground font-mono">
+                            {veiculoLoja.veiculo.placa || "N/A"}
+                          </p>
+                          <Badge 
+                            variant="secondary" 
+                            className={
+                              veiculoLoja.veiculo.estado_venda === "disponivel" ? "bg-success/10 text-success" :
+                              veiculoLoja.veiculo.estado_venda === "reservado" ? "bg-warning/10 text-warning" :
+                              veiculoLoja.veiculo.estado_venda === "vendido" ? "bg-destructive/10 text-destructive" :
+                              ""
+                            }
+                          >
+                            {veiculoLoja.veiculo.estado_venda === "disponivel" ? "Disp." :
+                             veiculoLoja.veiculo.estado_venda === "reservado" ? "Res." :
+                             veiculoLoja.veiculo.estado_venda === "vendido" ? "Vend." :
+                             veiculoLoja.veiculo.estado_venda}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-3">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {veiculoLoja.veiculo.ano_modelo || "N/A"}
+                      </div>
+                      <div>Cor: {veiculoLoja.veiculo.cor || "N/A"}</div>
+                      <div>KM: {veiculoLoja.veiculo.hodometro ? `${Number(veiculoLoja.veiculo.hodometro).toLocaleString()}` : "N/A"}</div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {veiculoLoja.veiculo.local?.nome || "N/A"}
+                      </div>
+                    </div>
 
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1" asChild>
-                      <Link to={`/dashboard/veiculo/${veiculoLoja.veiculo.id}`}>
-                        Ver Detalhes
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link to={`/dashboard/veiculo/${veiculoLoja.veiculo.id}/loja/${selectedLojaId}/editar`}>
-                        Editar
-                      </Link>
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
+                    {/* Preço editável */}
+                    <div className="mb-3">
+                      <PrecoVitrine 
+                        veiculoLojaId={veiculoLoja.id}
+                        precoAtual={veiculoLoja.preco}
+                      />
+                    </div>
+
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" className="flex-1" asChild>
+                        <Link to={`/dashboard/veiculo/${veiculoLoja.veiculo.id}`}>
+                          Ver Detalhes
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/dashboard/veiculo/${veiculoLoja.veiculo.id}/loja/${selectedLojaId}/editar`}>
+                          Editar
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })
           )}
         </div>
 
