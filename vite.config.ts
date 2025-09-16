@@ -171,7 +171,11 @@ export default defineConfig(({ mode }) => {
         'lodash',
         'date-fns',
         'clsx'
-      ]
+      ],
+      // Workaround for certain packages shipping broken source maps
+      esbuildOptions: {
+        sourcemap: false
+      }
     },
 
     // Environment variables
