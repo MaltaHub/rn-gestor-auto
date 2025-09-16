@@ -45,7 +45,7 @@ const navigationItems = [
   { title: "Company", url: "/dashboard/company", icon: Settings },
 ];
 
-// Dados de lojas e tenants agora vêm do Supabase via TenantContext
+// Dados de lojas e empresas agora vêm do Supabase via TenantContext
 
 export function AppSidebar() {
   const { state } = useSidebar();

@@ -133,7 +133,7 @@ export default function EstoqueGeralMobile() {
                       {veiculo.ano_modelo || "N/A"}
                     </div>
                     <div>Cor: {veiculo.cor || "N/A"}</div>
-                    <div>KM: {veiculo.hodometro ? `${Number(veiculo.hodometro).toLocaleString()}` : "N/A"}</div>
+                    <div>KM: {veiculo.quilometragem ? `${Number(veiculo.quilometragem).toLocaleString()}` : "N/A"}</div>
                     <div className="font-medium text-foreground">
                       {veiculo.preco_venda ? `R$ ${Number(veiculo.preco_venda).toLocaleString()}` : "N/A"}
                     </div>

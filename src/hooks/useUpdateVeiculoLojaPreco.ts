@@ -8,7 +8,7 @@ export function useUpdateVeiculoLojaPreco() {
   return useMutation({
     mutationFn: async ({ id, preco }: { id: string; preco: number | null }) => {
       const { data, error } = await supabase
-        .from("veiculos_loja")
+        .from("veiculos_lojas")
         .update({ preco })
         .eq("id", id)
         .select()

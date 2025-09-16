@@ -22,13 +22,13 @@ import { Label } from "@/components/ui/label";
 type Plataforma = {
   id: string;
   nome: string;
-  tenant_id: string;
+  empresa_id: string;
 };
 
 type Local = {
   id: string;
   nome: string;
-  tenant_id: string;
+  empresa_id: string;
 };
 
 type Caracteristica = {
@@ -84,7 +84,7 @@ export default function ConfiguracoesGerais() {
       const { data, error } = await supabase
         .from("plataforma")
         .select("*")
-        .eq("tenant_id", currentTenant!.id);
+        .eq("empresa_id", currentTenant!.id);
       if (error) throw error;
       return data as Plataforma[];
     },
@@ -97,7 +97,7 @@ export default function ConfiguracoesGerais() {
       const { data, error } = await supabase
         .from("locais")
         .select("*")
-        .eq("tenant_id", currentTenant!.id);
+        .eq("empresa_id", currentTenant!.id);
       if (error) throw error;
       return data as Local[];
     },
@@ -121,7 +121,7 @@ export default function ConfiguracoesGerais() {
       
       const data = table === "caracteristicas" 
         ? { nome: name.trim() }
-        : { nome: name.trim(), tenant_id: currentTenant!.id };
+        : { nome: name.trim(), empresa_id: currentTenant!.id };
       
       const { error } = await (supabase as any).from(table).insert(data);
       if (error) throw error;

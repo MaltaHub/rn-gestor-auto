@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { useDeviceVersion } from "@/hooks/use-mobile";
 import { TenantProvider } from "@/contexts/TenantContext";
+import { SupabaseProvider } from "@/shared/contexts/SupabaseContext";
 
 // Desktop Pages
 import Index from "./pages/Index";
@@ -51,12 +52,13 @@ const App = () => {
   console.log("🚀 App: Starting application...");
   return (
   <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <TenantProvider>
+    <SupabaseProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <TenantProvider>
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
@@ -158,6 +160,7 @@ const App = () => {
         </BrowserRouter>
       </TooltipProvider>
     </AuthProvider>
+  </SupabaseProvider>
   </QueryClientProvider>
   );
 };

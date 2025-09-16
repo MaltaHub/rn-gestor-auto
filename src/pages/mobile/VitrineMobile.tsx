@@ -173,7 +173,7 @@ export default function VitrineMobile() {
                         {veiculoLoja.veiculo.ano_modelo || "N/A"}
                       </div>
                       <div>Cor: {veiculoLoja.veiculo.cor || "N/A"}</div>
-                      <div>KM: {veiculoLoja.veiculo.hodometro ? `${Number(veiculoLoja.veiculo.hodometro).toLocaleString()}` : "N/A"}</div>
+                      <div>KM: {veiculoLoja.veiculo.quilometragem ? `${Number(veiculoLoja.veiculo.quilometragem).toLocaleString()}` : "N/A"}</div>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
                         {veiculoLoja.veiculo.local?.nome || "N/A"}

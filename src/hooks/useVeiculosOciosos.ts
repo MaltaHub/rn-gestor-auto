@@ -8,7 +8,7 @@ export type VeiculoOcioso = {
   cor: string;
   ano_modelo: number | null;
   ano_fabricacao: number | null;
-  hodometro: number | null;
+  quilometragem: number | null;
   preco: number | null;
   modelo: {
     id: string;
@@ -27,7 +27,7 @@ export function useVeiculosOciosos() {
       if (!currentTenant?.id) return [];
 
       const { data, error } = await supabase
-        .rpc("get_veiculos_ociosos", { p_tenant_id: currentTenant.id });
+        .rpc("obter_veiculos_ociosos", { p_empresa_id: currentTenant.id });
 
       if (error) throw error;
       return (data || []) as VeiculoOcioso[];

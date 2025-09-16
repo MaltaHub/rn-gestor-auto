@@ -20,10 +20,10 @@ import {
 import { Link } from 'react-router-dom';
 import { useAnuncios, useAnunciosStats } from '@/hooks/useAnuncios';
 import { useVeiculosOciosos } from '@/hooks/useVeiculosOciosos';
-import { useRepetidosSugestoes } from '@/hooks/useRepetidosSugestoes';
+import { useDuplicadosSugestoes } from '@/hooks/useRepetidosSugestoes';
 import { cn } from '@/lib/utils';
 
-type TabType = 'ociosos' | 'repetidos' | 'anuncios';
+type TabType = 'ociosos' | 'duplicados' | 'anuncios';
 
 // Componente para veículos ociosos
 function VeiculosOciosossTab() {
@@ -71,7 +71,7 @@ function VeiculosOciosossTab() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                       <span>Placa: {v.placa}</span>
                       <span>Cor: {v.cor}</span>
-                      {v.hodometro && <span>{v.hodometro.toLocaleString()} km</span>}
+                      {v.quilometragem && <span>{v.quilometragem.toLocaleString()} km</span>}
                     </div>
                     {v.preco && (
                       <div className="text-lg font-semibold text-primary mt-2">
@@ -95,15 +95,15 @@ function VeiculosOciosossTab() {
   );
 }
 
-// Componente para definição de repetidos
-function RepetidosTab() {
-  const { data: sugestoes = [], isLoading } = useRepetidosSugestoes();
+// Componente para definição de duplicados
+function DuplicadosTab() {
+  const { data: sugestoes = [], isLoading } = useDuplicadosSugestoes();
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold">Sugestões de Repetidos</h2>
+          <h2 className="text-xl font-semibold">Sugestões de Duplicados</h2>
           <p className="text-sm text-muted-foreground">
             {sugestoes.length} grupo(s) sugerido(s) para criação
           </p>
@@ -124,7 +124,7 @@ function RepetidosTab() {
             <GitMerge className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <h3 className="font-medium mb-2">Nenhuma sugestão disponível</h3>
             <p className="text-sm text-muted-foreground">
-              Não foram encontrados grupos de veículos similares para criar repetidos.
+              Não foram encontrados grupos de veículos similares para criar duplicados.
             </p>
           </CardContent>
         </Card>
@@ -141,7 +141,7 @@ function RepetidosTab() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                       <span>{sugestao.qtd_veiculos} veículos</span>
                       <span>
-                        {sugestao.min_hodometro?.toLocaleString()} - {sugestao.max_hodometro?.toLocaleString()} km
+                        {sugestao.min_quilometragem?.toLocaleString()} - {sugestao.max_quilometragem?.toLocaleString()} km
                       </span>
                     </div>
                     <div className="mt-2">
@@ -318,7 +318,7 @@ export default function Anuncios() {
 
   const tabs = [
     { id: 'ociosos' as TabType, label: 'Veículos Ociosos', icon: Car },
-    { id: 'repetidos' as TabType, label: 'Repetidos', icon: GitMerge },
+    { id: 'duplicados' as TabType, label: 'Duplicados', icon: GitMerge },
     { id: 'anuncios' as TabType, label: 'Anúncios', icon: List },
   ];
 
@@ -326,8 +326,8 @@ export default function Anuncios() {
     switch (activeTab) {
       case 'ociosos':
         return <VeiculosOciosossTab />;
-      case 'repetidos':
-        return <RepetidosTab />;
+      case 'duplicados':
+        return <DuplicadosTab />;
       case 'anuncios':
         return <AnunciosTab />;
       default:

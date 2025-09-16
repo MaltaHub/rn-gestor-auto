@@ -36,7 +36,7 @@ export function useVeiculosLoja() {
       if (!currentTenant?.id) return [];
 
       const { data, error } = await supabase
-        .from("veiculos_loja")
+        .from("veiculos_lojas")
         .select(`
           id,
           veiculo_id,
@@ -48,11 +48,14 @@ export function useVeiculosLoja() {
             placa,
             cor,
             ano_modelo,
-            modelo(id, marca, nome)
+            modelo:modelos(id, marca, nome)
           ),
-          loja:lojas!inner(id, nome)
+          loja:lojas!inner(
+            id,
+            nome
+          )
         `)
-        .eq("tenant_id", currentTenant.id);
+        .eq("empresa_id", currentTenant.id);
 
       if (error) throw error;
       return (data || []) as VeiculoLoja[];
@@ -76,7 +79,7 @@ export function useUpdateVeiculoLoja() {
       pasta_fotos?: string | null; 
     }) => {
       const { error } = await supabase
-        .from("veiculos_loja")
+        .from("veiculos_lojas")
         .update({ preco, pasta_fotos })
         .eq("id", id);
 
@@ -116,12 +119,12 @@ export function useAddVeiculoToLoja() {
       preco?: number | null; 
     }) => {
       const { error } = await supabase
-        .from("veiculos_loja")
+        .from("veiculos_lojas")
         .insert({
           veiculo_id,
           loja_id,
           preco,
-          tenant_id: currentTenant!.id,
+          empresa_id: currentTenant!.id,
         });
 
       if (error) throw error;
@@ -152,7 +155,7 @@ export function useRemoveVeiculoFromLoja() {
   return useMutation({
     mutationFn: async (veiculoLojaId: string) => {
       const { error } = await supabase
-        .from("veiculos_loja")
+        .from("veiculos_lojas")
         .delete()
         .eq("id", veiculoLojaId);
 

@@ -8,17 +8,17 @@ import { useTenantMembers } from "@/hooks/useTenantMembers";
 import { useAuth } from "@/hooks/useAuth";
 
 const roleLabels = {
-  owner: "Proprietário",
-  admin: "Administrador", 
-  manager: "Gerente",
-  user: "Usuário"
+  proprietario: "Proprietário",
+  administrador: "Administrador", 
+  gerente: "Gerente",
+  usuario: "Usuário"
 };
 
 const roleColors = {
-  owner: "destructive",
-  admin: "default",
-  manager: "secondary", 
-  user: "outline"
+  proprietario: "destructive",
+  administrador: "default",
+  gerente: "secondary", 
+  usuario: "outline"
 } as const;
 
 export default function Company() {
@@ -131,15 +131,15 @@ export default function Company() {
                         </div>
                         <div>
                           <p className="font-medium">
-                            {member.user_id === user?.id ? `${user?.email} (Você)` : member.user_id}
+                            {member.usuario_id === user?.id ? `${user?.email} (Você)` : member.usuario_id}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Membro desde {new Date(member.created_at).toLocaleDateString()}
+                            Membro desde {new Date(member.criado_em).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
-                      <Badge variant={roleColors[member.role]}>
-                        {roleLabels[member.role]}
+                      <Badge variant={roleColors[member.papel]}>
+                        {roleLabels[member.papel]}
                       </Badge>
                     </div>
                   ))}

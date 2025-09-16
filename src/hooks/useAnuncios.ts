@@ -11,21 +11,21 @@ export function useAnuncios() {
     queryFn: async () => {
       // Agora buscamos anúncios reais vinculados à loja selecionada
       const { data, error } = await supabase
-        .from("anuncios" as any)
+        .from("anuncios")
         .select(`
-          id, titulo, status, visualizacoes, favoritos, mensagens, data_publicacao, preco,
-          plataforma:plataforma_id ( id, nome ),
+          id, titulo, status, visualizacoes, favoritos, mensagens, criado_em, preco,
+          plataforma:plataformas ( id, nome ),
           veiculos_loja:veiculo_loja_id!inner(
             loja_id, preco,
             veiculos:veiculo_id!inner(
               id, hodometro, estado_venda, estado_veiculo, preco_venda,
               ano_modelo, ano_fabricacao, registrado_em, editado_em, placa, cor, observacao, chassi,
-              modelo(*)
+              modelo:modelos(*)
             )
           )
         `)
         .eq("veiculos_loja.loja_id", selectedLojaId)
-        .order("data_publicacao", { ascending: false });
+        .order("criado_em", { ascending: false });
 
       if (error) throw error;
 
@@ -37,7 +37,7 @@ export function useAnuncios() {
         visualizacoes: a.visualizacoes ?? 0,
         favoritos: a.favoritos ?? 0,
         mensagens: a.mensagens ?? 0,
-        dataPublicacao: a.data_publicacao ?? null,
+        dataPublicacao: a.criado_em ?? null,
         preco: a.preco ?? a.veiculos_loja?.preco ?? null,
         veiculo: a.veiculos_loja?.veiculos
           ? {
@@ -59,7 +59,7 @@ export function useAnunciosStats() {
     queryKey: ["anuncios-stats", selectedLojaId],
     enabled: !!selectedLojaId,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from("anuncios")
         .select(`
           status, visualizacoes, favoritos, mensagens,

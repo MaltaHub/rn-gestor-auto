@@ -35,7 +35,7 @@ export function useEstoqueGeral(filter?: string) {
           observacao,
           modelo(*)
         `)
-        .eq("tenant_id", currentTenant.id);
+        .eq("empresa_id", currentTenant.id);
 
       // Apply filter if provided
       if (filter) {
@@ -84,7 +84,7 @@ export function useEstoqueGeralStats() {
       const { data, error } = await supabase
         .from("veiculos")
         .select("estado_venda")
-        .eq("tenant_id", currentTenant.id);
+        .eq("empresa_id", currentTenant.id);
 
       if (error) {
         console.error("❌ useEstoqueGeralStats: Error fetching stats:", error);

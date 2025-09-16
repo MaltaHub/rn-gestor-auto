@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { useVeiculosParaAnuncio } from "@/hooks/useVeiculosParaAnuncio";
-import { useRepetidosSugestoes } from "@/hooks/useRepetidosSugestoes";
+import { useDuplicadosSugestoes } from "@/hooks/useRepetidosSugestoes";
 
 const criarAnuncioSchema = z.object({
   tipo_anuncio: z.enum(["individual", "repetido"]),
@@ -40,7 +40,7 @@ const criarAnuncioSchema = z.object({
   }
   return true;
 }, {
-  message: "Selecione um veículo ou grupo de repetidos",
+  message: "Selecione um veículo ou grupo de duplicados",
   path: ["veiculo_loja_id"],
 });
 
@@ -69,7 +69,7 @@ export default function CriarAnuncio() {
       const { data, error } = await supabase
         .from("plataforma")
         .select("id, nome")
-        .eq("tenant_id", currentTenant?.id)
+        .eq("empresa_id", currentTenant?.id)
         .order("nome");
       
       if (error) throw error;
@@ -80,8 +80,8 @@ export default function CriarAnuncio() {
   // Fetch veículos disponíveis para anúncios individuais
   const { data: veiculosParaAnuncio } = useVeiculosParaAnuncio();
 
-  // Fetch repetidos ociosos para anúncios de repetidos - usar sugestões
-  const { data: repetidosSugestoes } = useRepetidosSugestoes();
+  // Fetch duplicados ociosos para anúncios de duplicados - usar sugestões
+  const { data: duplicadosSugestoes } = useDuplicadosSugestoes();
 
   const onSubmit = async (values: CriarAnuncioForm) => {
     if (!currentTenant?.id) {
@@ -96,7 +96,7 @@ export default function CriarAnuncio() {
     setLoading(true);
     try {
       const anuncioData = {
-        tenant_id: currentTenant.id,
+        empresa_id: currentTenant.id,
         plataforma_id: values.plataforma_id,
         tipo_anuncio: values.tipo_anuncio,
         titulo: values.titulo,
@@ -194,7 +194,7 @@ export default function CriarAnuncio() {
                           </div>
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="repetido" id="repetido" />
-                            <Label htmlFor="repetido">Grupo de Repetidos</Label>
+                            <Label htmlFor="repetido">Grupo de Duplicados</Label>
                           </div>
                         </RadioGroup>
                       </FormControl>
@@ -237,7 +237,7 @@ export default function CriarAnuncio() {
                     name="repetido_id"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Grupo de Repetidos *</FormLabel>
+                        <FormLabel>Grupo de Duplicados *</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
@@ -245,10 +245,10 @@ export default function CriarAnuncio() {
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {repetidosSugestoes?.map((sugestao) => (
+                            {duplicadosSugestoes?.map((sugestao) => (
                               <SelectItem key={`${sugestao.modelo_id}-${sugestao.cor}-${sugestao.ano_modelo}`} value={`${sugestao.modelo_id}-${sugestao.cor}-${sugestao.ano_modelo}`}>
                                 {sugestao.cor} {sugestao.ano_modelo} ({sugestao.qtd_veiculos} veículos) 
-                                - {sugestao.min_hodometro}km a {sugestao.max_hodometro}km
+                                - {sugestao.min_quilometragem}km a {sugestao.max_quilometragem}km
                               </SelectItem>
                             ))}
                           </SelectContent>

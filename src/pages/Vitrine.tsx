@@ -205,7 +205,7 @@ export default function Vitrine() {
                     </TableCell>
                     <TableCell>{veiculoLoja.veiculo.cor || "N/A"}</TableCell>
                     <TableCell>
-                      {veiculoLoja.veiculo.hodometro ? `${Number(veiculoLoja.veiculo.hodometro).toLocaleString()} km` : "N/A"}
+                      {veiculoLoja.veiculo.quilometragem ? `${Number(veiculoLoja.veiculo.quilometragem).toLocaleString()} km` : "N/A"}
                     </TableCell>
                     <TableCell>
                       <PrecoVitrine 

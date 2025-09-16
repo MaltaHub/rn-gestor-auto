@@ -154,7 +154,7 @@ export default function VerVeiculo() {
                   <div>
                     <p className="text-sm text-muted-foreground">Quilometragem</p>
                     <p className="font-medium">
-                      {veiculo.hodometro ? `${Number(veiculo.hodometro).toLocaleString()} km` : 'N/A'}
+                      {veiculo.quilometragem ? `${Number(veiculo.quilometragem).toLocaleString()} km` : 'N/A'}
                     </p>
                   </div>
                 </div>

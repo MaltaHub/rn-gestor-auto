@@ -96,7 +96,8 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
       // Upload files sequentially to avoid overwhelming the server
       validFiles.forEach((file, index) => {
         setTimeout(() => {
-          const nextOrder = Math.max(...photos.map(p => p.ordem), -1) + 1 + index;
+          const currentMaxOrder = photos.length > 0 ? Math.max(...photos.map(p => p.ordem)) : -1;
+          const nextOrder = currentMaxOrder + 1 + index;
           uploadMutation.mutate({ veiculoId, file }, {
             onSuccess: (fileName) => {
               setPreviewPhotos(prev => prev.filter(p => p !== file));
@@ -113,7 +114,7 @@ export function PhotoManager({ veiculoId, photos, isLoading }: PhotoManagerProps
         }, index * 100); // Stagger uploads by 100ms
       });
     }
-  }, [veiculoId, uploadMutation, updateOrderMutation, photos]);
+  }, [veiculoId, uploadMutation, updateOrderMutation]); // Removed photos dependency to prevent re-renders
 
   const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;

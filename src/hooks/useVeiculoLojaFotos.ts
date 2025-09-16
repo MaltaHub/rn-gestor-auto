@@ -5,12 +5,12 @@ import { toast } from 'sonner';
 export interface VeiculoLojaFoto {
   id: string;
   veiculo_loja_id: string;
-  foto_nome: string;
+  nome_foto: string;
   ordem: number;
-  is_capa: boolean;
+  eh_capa: boolean;
   url?: string;
-  created_at: string;
-  updated_at: string;
+  criado_em: string;
+  atualizado_em: string;
 }
 
 // Hook to fetch photos for a specific veiculo-loja
@@ -20,7 +20,7 @@ export function useVeiculoLojaFotos(veiculoLojaId: string) {
     enabled: !!veiculoLojaId,
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('veiculos_fotos_metadata')
+        .from('metadados_fotos_veiculos')
         .select('*')
         .eq('veiculo_loja_id', veiculoLojaId)
         .order('ordem', { ascending: true });
@@ -32,7 +32,7 @@ export function useVeiculoLojaFotos(veiculoLojaId: string) {
         (data || []).map(async (foto) => {
           const { data: urlData } = await supabase.storage
             .from('fotos_veiculos_loja')
-            .createSignedUrl(foto.foto_nome, 3600);
+            .createSignedUrl(foto.nome_foto, 3600);
 
           return {
             ...foto,
@@ -75,12 +75,12 @@ export function useUploadVeiculoLojaFoto() {
 
       // Save metadata
       const { data, error: metadataError } = await supabase
-        .from('veiculos_fotos_metadata')
+        .from('metadados_fotos_veiculos')
         .insert({
           veiculo_loja_id: veiculoLojaId,
-          foto_nome: fileName,
+          nome_foto: fileName,
           ordem: 0,
-          is_capa: false
+          eh_capa: false
         })
         .select()
         .single();
@@ -125,7 +125,7 @@ export function useDeleteVeiculoLojaFoto() {
 
       // Delete metadata
       const { error: metadataError } = await supabase
-        .from('veiculos_fotos_metadata')
+        .from('metadados_fotos_veiculos')
         .delete()
         .eq('id', id);
 
@@ -160,7 +160,7 @@ export function useUpdateVeiculoLojaPhotosOrder() {
     }) => {
       const updates = photoOrders.map(({ id, ordem }) =>
         supabase
-          .from('veiculos_fotos_metadata')
+          .from('metadados_fotos_veiculos')
           .update({ ordem })
           .eq('id', id)
       );
@@ -200,14 +200,14 @@ export function useSetVeiculoLojaCoverPhoto() {
     }) => {
       // First, remove cover from all photos of this veiculo-loja
       await supabase
-        .from('veiculos_fotos_metadata')
-        .update({ is_capa: false })
+        .from('metadados_fotos_veiculos')
+        .update({ eh_capa: false })
         .eq('veiculo_loja_id', veiculoLojaId);
 
       // Then set the new cover
       const { error } = await supabase
-        .from('veiculos_fotos_metadata')
-        .update({ is_capa: true })
+        .from('metadados_fotos_veiculos')
+        .update({ eh_capa: true })
         .eq('id', photoId);
 
       if (error) throw error;

@@ -18,10 +18,10 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { useAnuncios, useAnunciosStats } from '@/hooks/useAnuncios';
 import { useVeiculosOciosos } from '@/hooks/useVeiculosOciosos';
-import { useRepetidosSugestoes } from '@/hooks/useRepetidosSugestoes';
+import { useDuplicadosSugestoes } from '@/hooks/useRepetidosSugestoes';
 import { cn } from '@/lib/utils';
 
-type TabType = 'ociosos' | 'repetidos' | 'anuncios';
+type TabType = 'ociosos' | 'duplicados' | 'anuncios';
 
 export default function AnunciosMobile() {
   const [activeTab, setActiveTab] = useState<TabType>('ociosos');
@@ -30,7 +30,7 @@ export default function AnunciosMobile() {
   
   const { data: anuncios = [], isLoading: loadingAnuncios } = useAnuncios();
   const { data: ociosos = [], isLoading: loadingOciosos } = useVeiculosOciosos();
-  const { data: sugestoes = [], isLoading: loadingSugestoes } = useRepetidosSugestoes();
+  const { data: sugestoes = [], isLoading: loadingSugestoes } = useDuplicadosSugestoes();
   const { data: stats } = useAnunciosStats();
 
   const filteredAnuncios = anuncios.filter(anuncio => 
@@ -101,7 +101,7 @@ export default function AnunciosMobile() {
           </div>
         );
 
-      case 'repetidos':
+      case 'duplicados':
         return (
           <div className="space-y-3">
             {loadingSugestoes ? (
@@ -128,7 +128,7 @@ export default function AnunciosMobile() {
                           {sugestao.cor} {sugestao.ano_modelo}
                         </h3>
                         <p className="text-xs text-muted-foreground">
-                          {sugestao.qtd_veiculos} veículos • {sugestao.min_hodometro?.toLocaleString()} - {sugestao.max_hodometro?.toLocaleString()} km
+                          {sugestao.qtd_veiculos} veículos • {sugestao.min_quilometragem?.toLocaleString()} - {sugestao.max_quilometragem?.toLocaleString()} km
                         </p>
                       </div>
                     </div>
@@ -247,13 +247,13 @@ export default function AnunciosMobile() {
             Ociosos ({ociosos.length})
           </Button>
           <Button
-            variant={activeTab === 'repetidos' ? 'default' : 'outline'}
+            variant={activeTab === 'duplicados' ? 'default' : 'outline'}
             size="sm"
-            className="flex-shrink-0"
-            onClick={() => setActiveTab('repetidos')}
+            className="flex-1"
+            onClick={() => setActiveTab('duplicados')}
           >
-            <GitMerge className="h-4 w-4 mr-2" />
-            Repetidos ({sugestoes.length})
+            <GitMerge className="h-4 w-4 mr-1" />
+            Duplicados ({sugestoes.length})
           </Button>
           <Button
             variant={activeTab === 'anuncios' ? 'default' : 'outline'}

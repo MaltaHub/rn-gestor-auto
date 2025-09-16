@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export type Tenant = { id: string; nome: string; dominio?: string };
-export type Loja = { id: string; nome: string; tenant_id: string | null };
+export type Loja = { id: string; nome: string; empresa_id: string | null };
 
 type TenantContextType = {
   currentTenant: Tenant | null;
@@ -56,10 +56,13 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      console.log("🔄 TenantContext: auth changed, invalidating queries");
-      queryClient.invalidateQueries({ queryKey: ["user-tenant"] });
-      queryClient.invalidateQueries({ queryKey: ["lojas"] });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Only invalidate queries on actual auth changes, not on every state change
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        console.log("🔄 TenantContext: meaningful auth change, invalidating queries", event);
+        queryClient.invalidateQueries({ queryKey: ["user-tenant"] });
+        queryClient.invalidateQueries({ queryKey: ["lojas"] });
+      }
     });
     return () => subscription.unsubscribe();
   }, [queryClient]);
@@ -73,18 +76,18 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       console.log("🔍 TenantContext: Fetching user tenant for user:", user!.id);
       
-      // Direct query to tenant_members with join to tenants table
+      // Direct query to membros_empresa with join to empresas table
       const { data: memberData, error: memberError } = await supabase
-        .from("tenant_members")
+        .from("membros_empresa")
         .select(`
-          tenant_id,
-          tenants!inner(
+          empresa_id,
+          empresas!inner(
             id,
             nome,
             dominio
           )
         `)
-        .eq("user_id", user!.id)
+        .eq("usuario_id", user!.id)
         .eq("ativo", true)
         .maybeSingle();
       
@@ -98,7 +101,7 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
         return null;
       }
       
-      const tenant = memberData.tenants;
+      const tenant = memberData.empresas;
       console.log("✅ TenantContext: Tenant found:", tenant);
       return tenant;
     },
@@ -111,8 +114,8 @@ export function TenantProvider({ children }: { children: React.ReactNode }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("lojas")
-        .select("id, nome, tenant_id")
-        .eq("tenant_id", currentTenant!.id)
+        .select("id, nome, empresa_id")
+        .eq("empresa_id", currentTenant!.id)
         .order("nome", { ascending: true });
       if (error) throw error;
       return (data ?? []) as Loja[];

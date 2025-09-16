@@ -11,7 +11,7 @@ export function useVeiculo(id: string) {
         .from("veiculos")
         .select(`
           *,
-          modelo(*),
+          modelo:modelos(*),
           caracteristicas_veiculos(
             caracteristica_id,
             caracteristicas(id, nome)
@@ -58,7 +58,7 @@ export function useVeiculoFotos(veiculoId: string) {
             .from("fotos_veiculos_loja")
             .getPublicUrl(`veiculo_${veiculoId}/${file.name}`).data.publicUrl,
           size: file.metadata?.size || 0,
-          lastModified: file.updated_at || file.created_at,
+          lastModified: file.atualizado_em || file.criado_em,
           ordem: metaInfo?.ordem || 0,
           isCapa: metaInfo?.is_capa || false,
         };

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -28,7 +28,7 @@ interface VeiculoFormData {
   cor: string;
   ano_modelo: number;
   ano_fabricacao: number;
-  hodometro: number;
+  quilometragem: number;
   estado_venda: string;
   estado_veiculo: string;
   preco_venda: number;
@@ -46,22 +46,24 @@ export default function EditarVeiculo() {
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<VeiculoFormData>();
 
-  // Populate form with vehicle data
+  // Populate form with vehicle data - use ref to track if already populated
+  const isPopulatedRef = useRef(false);
   useEffect(() => {
-    if (veiculo) {
+    if (veiculo && !isPopulatedRef.current) {
       setValue('placa', veiculo.placa || '');
       setValue('cor', veiculo.cor || '');
       setValue('ano_modelo', veiculo.ano_modelo || new Date().getFullYear());
       setValue('ano_fabricacao', veiculo.ano_fabricacao || new Date().getFullYear());
-      setValue('hodometro', Number(veiculo.hodometro) || 0);
+      setValue('quilometragem', Number(veiculo.quilometragem) || 0);
       setValue('estado_venda', veiculo.estado_venda || 'disponivel');
       setValue('estado_veiculo', veiculo.estado_veiculo || 'usado');
       setValue('preco_venda', Number(veiculo.preco_venda) || 0);
       setValue('observacao', veiculo.observacao || '');
       setValue('chassi', veiculo.chassi || '');
       setValue('estagio_documentacao', veiculo.estagio_documentacao || '');
+      isPopulatedRef.current = true;
     }
-  }, [veiculo, setValue]);
+  }, [veiculo]); // Removed setValue from dependencies to prevent re-renders
 
   const onSubmit = (data: VeiculoFormData) => {
     updateMutation.mutate(
@@ -220,18 +222,17 @@ export default function EditarVeiculo() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="hodometro">Quilometragem *</Label>
+                <Label htmlFor="quilometragem">Quilometragem *</Label>
                 <Input
-                  id="hodometro"
+                  id="quilometragem"
                   type="number"
-                  {...register('hodometro', { 
-                    required: 'Quilometragem é obrigatória',
-                    min: { value: 0, message: 'Valor deve ser positivo' }
+                  {...register('quilometragem', {
+                    required: "Quilometragem é obrigatória",
+                    min: { value: 0, message: "Quilometragem deve ser positiva" }
                   })}
-                  placeholder="50000"
                 />
-                {errors.hodometro && (
-                  <p className="text-sm text-destructive">{errors.hodometro.message}</p>
+                {errors.quilometragem && (
+                  <p className="text-sm text-destructive">{errors.quilometragem.message}</p>
                 )}
               </div>
 

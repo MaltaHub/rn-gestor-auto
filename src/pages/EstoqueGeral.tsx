@@ -162,7 +162,7 @@ export default function EstoqueGeral() {
                       </div>
                     </TableCell>
                     <TableCell>{veiculo.cor || "N/A"}</TableCell>
-                    <TableCell>{veiculo.hodometro ? `${Number(veiculo.hodometro).toLocaleString()} km` : "N/A"}</TableCell>
+                    <TableCell>{veiculo.quilometragem ? `${Number(veiculo.quilometragem).toLocaleString()} km` : "N/A"}</TableCell>
                     <TableCell className="font-medium">
                       {veiculo.preco_venda ? `R$ ${Number(veiculo.preco_venda).toLocaleString()}` : "N/A"}
                     </TableCell>

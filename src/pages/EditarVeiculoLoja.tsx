@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -42,13 +42,15 @@ export default function EditarVeiculoLoja() {
   // Find the loja info
   const loja = lojas.find(l => l.id === lojaId);
 
-  // Populate form with veiculo-loja data
+  // Populate form with veiculo-loja data - use ref to track if already populated
+  const isPopulatedRef = useRef(false);
   useEffect(() => {
-    if (veiculoLoja) {
+    if (veiculoLoja && !isPopulatedRef.current) {
       setValue('preco', Number(veiculoLoja.preco) || 0);
       setValue('pasta_fotos', veiculoLoja.pasta_fotos || '');
+      isPopulatedRef.current = true;
     }
-  }, [veiculoLoja, setValue]);
+  }, [veiculoLoja]); // Removed setValue from dependencies to prevent re-renders
 
   const onSubmit = (data: VeiculoLojaFormData) => {
     if (!veiculoLoja) {
@@ -184,7 +186,7 @@ export default function EditarVeiculoLoja() {
               <div className="space-y-2">
                 <Label>Quilometragem</Label>
                 <div className="p-2 bg-muted rounded">
-                  {Number(veiculo.hodometro).toLocaleString()} km
+                  {Number(veiculo.quilometragem).toLocaleString()} km
                 </div>
               </div>
 

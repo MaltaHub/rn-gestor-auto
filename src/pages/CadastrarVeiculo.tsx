@@ -23,7 +23,7 @@ const cadastrarVeiculoSchema = z.object({
   modelo_id: z.string().min(1, "Modelo é obrigatório"),
   ano_modelo: z.coerce.number().min(1900, "Ano modelo inválido"),
   ano_fabricacao: z.coerce.number().min(1900, "Ano fabricação inválido"),
-  hodometro: z.coerce.number().min(0, "Hodômetro deve ser positivo"),
+  quilometragem: z.coerce.number().min(0, "Quilometragem deve ser positiva"),
   preco_venda: z.coerce.number().optional(),
   preco_loja: z.coerce.number().optional(),
   estado_venda: z.enum(["disponivel", "reservado", "vendido"]),
@@ -46,7 +46,7 @@ export default function CadastrarVeiculo() {
     defaultValues: {
       estado_venda: "disponivel",
       estado_veiculo: "usado",
-      hodometro: 0,
+      quilometragem: 0,
     },
   });
 
@@ -58,7 +58,7 @@ export default function CadastrarVeiculo() {
       const { data, error } = await supabase
         .from("modelo")
         .select("id, marca, nome")
-        .eq("tenant_id", currentTenant?.id)
+        .eq("empresa_id", currentTenant?.id)
         .order("marca", { ascending: true });
       
       if (error) throw error;
@@ -74,7 +74,7 @@ export default function CadastrarVeiculo() {
       const { data, error } = await supabase
         .from("locais")
         .select("id, nome")
-        .eq("tenant_id", currentTenant?.id)
+        .eq("empresa_id", currentTenant?.id)
         .order("nome", { ascending: true });
 
       if (error) throw error;
@@ -132,14 +132,14 @@ export default function CadastrarVeiculo() {
           modelo_id: values.modelo_id,
           ano_modelo: values.ano_modelo,
           ano_fabricacao: values.ano_fabricacao,
-          hodometro: values.hodometro,
+          quilometragem: values.quilometragem,
           preco_venda: values.preco_venda,
           estado_venda: values.estado_venda,
           estado_veiculo: values.estado_veiculo,
           observacao: values.observacao,
           estagio_documentacao: values.estagio_documentacao,
           
-          tenant_id: currentTenant.id,
+          empresa_id: currentTenant.id,
         })
         .select()
         .single();
@@ -153,7 +153,7 @@ export default function CadastrarVeiculo() {
           veiculo_id: veiculo.id,
           loja_id: selectedLojaId,
           preco: values.preco_loja,
-          tenant_id: currentTenant.id,
+          empresa_id: currentTenant.id,
           pasta_fotos: selectedImages.length > 0 ? `${currentTenant.id}/${selectedLojaId}/${veiculo.id}` : null,
         });
 
@@ -320,7 +320,7 @@ export default function CadastrarVeiculo() {
 
                 <FormField
                   control={form.control}
-                  name="hodometro"
+                  name="quilometragem"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Hodômetro (Km) *</FormLabel>

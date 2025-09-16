@@ -2,73 +2,77 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useTenant } from "@/contexts/TenantContext";
 
-export type TenantRole = "owner" | "admin" | "manager" | "user";
+export type PapelEmpresa = "proprietario" | "administrador" | "gerente" | "usuario";
 
-export type TenantMember = {
+export type MembroEmpresa = {
   id: string;
-  user_id: string;
-  role: TenantRole;
+  usuario_id: string;
+  papel: PapelEmpresa;
   ativo: boolean;
-  created_at: string;
+  criado_em: string;
   profiles?: {
     display_name?: string;
     email?: string;
   };
 };
 
+// Manter compatibilidade temporária
+export type TenantRole = PapelEmpresa;
+export type TenantMember = MembroEmpresa;
+
 export function useTenantMembers() {
   const { currentTenant } = useTenant();
   const queryClient = useQueryClient();
 
   const { data: members, isLoading } = useQuery({
-    queryKey: ["tenant-members", currentTenant?.id],
+    queryKey: ["membros-empresa", currentTenant?.id],
     enabled: !!currentTenant?.id,
     queryFn: async () => {
       if (!currentTenant?.id) throw new Error("No tenant selected");
       
       const { data, error } = await supabase
-        .from("tenant_members")
+        .from("membros_empresa")
         .select(`
           id,
-          user_id,
-          role,
+          usuario_id,
+          papel,
           ativo,
-          created_at
+          criado_em
         `)
-        .eq("tenant_id", currentTenant.id)
+        .eq("empresa_id", currentTenant.id)
         .eq("ativo", true)
-        .order("created_at", { ascending: true });
+        .order("criado_em", { ascending: true });
       
       if (error) throw error;
-      return (data ?? []) as TenantMember[];
+      return (data ?? []) as MembroEmpresa[];
     },
   });
 
   const updateMemberRole = useMutation({
-    mutationFn: async ({ memberId, newRole }: { memberId: string; newRole: TenantRole }) => {
+    mutationFn: async ({ memberId, newRole }: { memberId: string; newRole: PapelEmpresa }) => {
       const { error } = await supabase
-        .from("tenant_members")
-        .update({ role: newRole })
+        .from("membros_empresa")
+        .update({ papel: newRole })
         .eq("id", memberId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tenant-members", currentTenant?.id] });
+      queryClient.invalidateQueries({ queryKey: ["membros-empresa", currentTenant?.id] });
     },
   });
 
   const removeMember = useMutation({
     mutationFn: async (memberId: string) => {
       const { error } = await supabase
-        .from("tenant_members")
+        .from("membros_empresa")
         .update({ ativo: false })
         .eq("id", memberId);
       
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tenant-members", currentTenant?.id] });
+      queryClient.invalidateQueries({ queryKey: ["membros-empresa", currentTenant?.id] });
     },
   });
 
