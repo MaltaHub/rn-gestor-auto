@@ -1,1 +1,0 @@
-export { default as OptimizedImage, useOptimizedImage, OptimizedBackground } from './OptimizedImage';
